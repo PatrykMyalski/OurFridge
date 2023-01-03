@@ -1,8 +1,15 @@
 package com.patmy.ourfridge.ui.theme
 
+
 import androidx.compose.ui.graphics.Color
 
-val Purple200 = Color(0xFFBB86FC)
-val Purple500 = Color(0xFF6200EE)
-val Purple700 = Color(0xFF3700B3)
-val Teal200 = Color(0xFF03DAC5)
+val PrimaryLight = Color(0xFFE4B1AB)
+val PrimaryVariantLight = Color(0xFFDF7373)
+val SecondaryLight = Color(0xFFDC2727)
+val BackgroundLight = Color(0xFFE4CDCA)
+val TextLight = Color(0xFF000000)
+val TextDark = Color(0xFFFFFFFF)
+val PrimaryDark = Color(0xFF444444)
+val PrimaryVariantDark = Color(0xFF7D7D7D)
+val SecondaryDark = Color(0xFF15B5D1)
+val BackgroundDark = Color(0xFF2E2E2E)
