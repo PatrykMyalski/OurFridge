@@ -23,43 +23,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.patmy.ourfridge.R
+import com.patmy.ourfridge.components.OurFridgeAppTopBar
 import java.util.logging.XMLFormatter
 
 @Composable
 fun FridgeHomeScreen(navController: NavController) {
-    Scaffold(topBar = {}, backgroundColor = MaterialTheme.colors.background) {
+    Scaffold(topBar = {
         OurFridgeAppTopBar(title = "OurFridge", navController = navController)
+    }, backgroundColor = MaterialTheme.colors.background) {
+
     }
 }
 
-@Composable
-fun OurFridgeAppTopBar(
-    title: String,
-    icon: ImageVector? = null,
-    showLogo: Boolean = true,
-    showProfile: Boolean = true,
-    navController: NavController,
-    onHomeClicked: () -> Unit = { TODO("Nav to HomeScreen")},
-    onProfileClicked: () -> Unit = { TODO("Click on profile icon, maybe side bar or profile screen")}) {
 
-    TopAppBar(modifier = Modifier, backgroundColor = MaterialTheme.colors.primary, title = {
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-            if (showLogo) {
-                Icon(painter = painterResource(id = R.drawable.applogo),
-                    contentDescription = "app logo",
-                    modifier = Modifier.clip(shape = CircleShape).clickable { },
-                    tint = MaterialTheme.colors.secondary)
-            }
-            Text(text = title, modifier = Modifier,
-                color = MaterialTheme.colors.secondary,
-                fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            if (showProfile){
-                Icon(painter = painterResource(id = R.drawable.profile),
-                    contentDescription = "profile icon",
-                    modifier = Modifier.clip(shape = CircleShape).clickable { },
-                    tint = MaterialTheme.colors.secondary)
-            }
-
-        }
-    })
-}

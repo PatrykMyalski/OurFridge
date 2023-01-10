@@ -14,7 +14,7 @@ import com.patmy.ourfridge.screens.splash.SplashScreen
 fun OurFridgeNavigation() {
     val navController = rememberNavController()
     NavHost(navController = navController,
-        startDestination = OurFridgeScreens.FridgeHomeScreen.name){
+        startDestination = OurFridgeScreens.RegistrationScreen.name){
         composable(OurFridgeScreens.FridgeScreen.name){
             FridgeScreen(navController = navController)
         }
