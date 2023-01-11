@@ -14,9 +14,9 @@ import com.patmy.ourfridge.components.UserForm
 fun RegistrationScreen(navController: NavController) {
     Scaffold(topBar = { OurFridgeAppTopBar(title = "OurFridge", navController = navController, showProfile = false) }) {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
-            UserForm(registration = true){
+/*            UserForm(registration = true){
                 TODO("onSubmit")
-            }
+            }*/
         }
     }
 }

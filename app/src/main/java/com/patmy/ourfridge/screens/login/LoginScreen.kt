@@ -31,18 +31,25 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.components.OurFridgeAppTopBar
 import com.patmy.ourfridge.components.UserForm
+import com.patmy.ourfridge.navigation.OurFridgeScreens
 
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController, viewModel: LoginScreenViewModel = viewModel()) {
 
     Scaffold(topBar = { OurFridgeAppTopBar(title = "OurFridge", navController = navController, showProfile = false) }) {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
-            UserForm(){
-                TODO("onSubmit")
+            UserForm { email: String, password: String ->
+                viewModel.signIn(email, password) {
+                    navController.navigate(OurFridgeScreens.FridgeHomeScreen.name)
+                }
             }
         }
     }

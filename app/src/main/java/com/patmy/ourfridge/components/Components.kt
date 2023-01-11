@@ -30,6 +30,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -50,7 +51,9 @@ fun OurFridgeAppTopBar(
             if (showLogo) {
                 Icon(painter = painterResource(id = R.drawable.applogo),
                     contentDescription = "app logo",
-                    modifier = Modifier.clip(shape = CircleShape).clickable { },
+                    modifier = Modifier
+                        .clip(shape = CircleShape)
+                        .clickable { },
                     tint = MaterialTheme.colors.secondary)
             }
             Text(text = title, modifier = Modifier.padding(end = 15.dp),
@@ -59,7 +62,9 @@ fun OurFridgeAppTopBar(
             if (showProfile){
                 Icon(painter = painterResource(id = R.drawable.profile),
                     contentDescription = "profile icon",
-                    modifier = Modifier.clip(shape = CircleShape).clickable { },
+                    modifier = Modifier
+                        .clip(shape = CircleShape)
+                        .clickable { },
                     tint = MaterialTheme.colors.secondary)
             }
 
@@ -69,7 +74,7 @@ fun OurFridgeAppTopBar(
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun UserForm(loading: Boolean = false, registration: Boolean = false, onSubmit: () -> Unit){
+fun UserForm(loading: Boolean = false, registration: Boolean = false, onSubmit: (email: String, password: String) -> Unit){
 
     val modifier = Modifier
         .padding(top = 30.dp)
@@ -86,8 +91,14 @@ fun UserForm(loading: Boolean = false, registration: Boolean = false, onSubmit: 
         val passwordAgainFocusRequest = remember { FocusRequester() }
         val keyboardController = LocalSoftwareKeyboardController.current
         val valid = remember(emailState.value, passwordState.value) {
-            emailState.value.trim().isNotEmpty() && passwordState.value.trim().isNotEmpty()
+            if (registration){
+                emailState.value.trim().isNotEmpty() && passwordState.value.trim().isNotEmpty() && passwordAgainState.value.trim().isNotEmpty()
+            } else {
+                emailState.value.trim().isNotEmpty() && passwordState.value.trim().isNotEmpty()
+            }
         }
+        val validForm = remember { mutableStateOf(true) }
+        val samePasswords = remember { mutableStateOf(true) }
 
         EmailInput(emailState = emailState, onAction = KeyboardActions{
             passwordFocusRequest.requestFocus()
@@ -108,8 +119,38 @@ fun UserForm(loading: Boolean = false, registration: Boolean = false, onSubmit: 
                 passwordVisibility = passwordVisibility,
                 passwordReply = registration)
         }
+
+        if (!samePasswords.value){
+            Text(text = "Passwords are not the same!",
+                modifier = Modifier.padding(top = 10.dp),
+                fontSize = 16.sp,
+                color = MaterialTheme.colors.error)
+        }
+
         SubmitButton(title = if (registration) "Register" else "Login" , loading, valid){
-            TODO("On login click")
+            if (registration) {
+                samePasswords.value =  passwordState.value == passwordAgainState.value
+                validForm.value = emailState.value.contains('@') && passwordState.value.length >= 6
+            } else {
+                validForm.value = emailState.value.contains('@') && passwordState.value.length >= 6
+            }
+            onSubmit(emailState.value, passwordState.value)
+        }
+        if (!validForm.value){
+            if (registration){
+                Text(text = "Email must include '@' and password must be at least 6 characters!",
+                    modifier = Modifier.padding(20.dp),
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colors.error,
+                    textAlign = TextAlign.Center)
+            } else {
+                Text(text = "Email or password is incorrect!",
+                    modifier = Modifier.padding(20.dp),
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colors.error,
+                    textAlign = TextAlign.Center)
+            }
+
         }
     }
 }
@@ -131,7 +172,6 @@ fun SubmitButton(title: String, loading: Boolean, validInputs: Boolean, onClick:
         else Text(text = title, modifier = Modifier, fontSize = 20.sp)
     }
 }
-
 
 @Composable
 fun PasswordInput(modifier: Modifier,

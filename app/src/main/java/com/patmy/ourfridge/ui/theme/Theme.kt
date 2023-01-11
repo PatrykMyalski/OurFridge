@@ -12,7 +12,8 @@ private val DarkColorPalette = darkColors(
     primaryVariant = PrimaryVariantDark,
     secondary = SecondaryDark,
     onSecondary = TextDark,
-    background = BackgroundDark
+    background = BackgroundDark,
+    error = Error
 )
 
 private val LightColorPalette = lightColors(
@@ -20,7 +21,8 @@ private val LightColorPalette = lightColors(
     primaryVariant = PrimaryVariantLight,
     secondary = SecondaryLight,
     onSecondary = TextLight,
-    background = BackgroundLight
+    background = BackgroundLight,
+    error = Error
 
     /* Other default colors to override
     background = Color.White,
