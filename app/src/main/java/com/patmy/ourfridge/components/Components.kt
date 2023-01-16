@@ -9,6 +9,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -21,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -35,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.patmy.ourfridge.R
+import com.patmy.ourfridge.model.MFoodInside
 
 @Composable
 fun OurFridgeAppTopBar(
@@ -71,6 +75,32 @@ fun OurFridgeAppTopBar(
         }
     })
 }
+
+@Composable
+fun OurFridgeAppBottomBar(navController: NavController) {
+    BottomAppBar(modifier = Modifier, backgroundColor = MaterialTheme.colors.primary) {
+        Row(modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly) {
+            BottomAppBarIcon(title = "People", icon = Icons.Default.People){
+                //TODO navController to people screen
+            }
+            BottomAppBarIcon(title = "Home", icon = Icons.Default.Home){
+                ////TODO navController to home screen
+            }
+        }
+    }
+}
+
+@Composable
+fun BottomAppBarIcon(title: String, icon: ImageVector, onClick: () -> Unit){
+    Column(modifier = Modifier.clickable{ onClick.invoke() },
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(imageVector = icon, contentDescription = title,modifier = Modifier.size(30.dp), tint = MaterialTheme.colors.secondary)
+        Text(text = title, modifier = Modifier, fontSize = 14.sp , color = MaterialTheme.colors.secondary)
+    }
+}
+
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -267,4 +297,18 @@ fun InputField(modifier: Modifier = Modifier,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
         keyboardActions = onAction,
     )
+}
+
+@Composable
+fun FoodLabel(food: MFoodInside, onClick: () -> Unit) {
+    Column(modifier = Modifier.padding(4.dp)) {
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick.invoke() }){
+            Text(text = food.title.toString(), modifier = Modifier.padding(end = 18.dp))
+            Text(text = food.quantity.toString(), modifier = Modifier.padding(end = 2.dp))
+            Text(text = food.unit.toString())
+        }
+        Divider(modifier = Modifier.fillMaxWidth(), color = Color.Black, thickness = 1.dp)
+    }
 }
