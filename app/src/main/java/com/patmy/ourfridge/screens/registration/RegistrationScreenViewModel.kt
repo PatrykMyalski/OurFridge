@@ -1,4 +1,4 @@
-package com.patmy.ourfridge.screens.login
+package com.patmy.ourfridge.screens.registration
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
@@ -9,32 +9,31 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 
-class LoginScreenViewModel : ViewModel() {
+class RegistrationScreenViewModel : ViewModel() {
     private val auth: FirebaseAuth = Firebase.auth
 
+    private val loading = MutableLiveData(false)
 
 
-    fun signIn(email: String, password: String, toHome: () -> Unit, userNotFound: () -> Unit, changeLoadingValue: () -> Unit) {
+    fun signUp(email: String, password: String, toHome: () -> Unit, emailAlreadyAtUse: () -> Unit, changeLoadingValue: () -> Unit) {
         viewModelScope.launch {
             try {
                 changeLoadingValue()
-                auth.signInWithEmailAndPassword(email, password)
+                auth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
+                        loading.value = true
                         if (task.isSuccessful) {
-                            Log.d("FB", "signIn Successful: ${task.result}")
+                            Log.d("FB", "signUp Successful: ${task.result}")
                             changeLoadingValue()
                             toHome()
                         } else {
-                            Log.d("FB", "signIn unsuccessful: ${task.exception}")
+                            Log.d("FB", "signUp unsuccessful: ${task.exception}")
                             changeLoadingValue()
-                            userNotFound()
+                            emailAlreadyAtUse()
                         }
-                    }.addOnFailureListener {
-                        println(it)
-                        changeLoadingValue()
                     }
             } catch (e: Exception) {
-                println("signIn error occur: ${e.message.toString()}")
+                println("signUP error occur: ${e.message.toString()}")
                 changeLoadingValue()
             }
         }

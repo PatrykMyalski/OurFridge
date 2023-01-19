@@ -39,41 +39,26 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.patmy.ourfridge.R
 import com.patmy.ourfridge.model.MFoodInside
+import com.patmy.ourfridge.navigation.OurFridgeScreens
 
 @Composable
-fun OurFridgeAppTopBar(
-    title: String,
-    icon: ImageVector? = null,
-    showLogo: Boolean = true,
-    showProfile: Boolean = true,
-    navController: NavController,
-    onHomeClicked: () -> Unit = { TODO("Nav to HomeScreen")},
-    onProfileClicked: () -> Unit = { TODO("Click on profile icon, maybe side bar or profile screen")}) {
-
-    TopAppBar(modifier = Modifier, backgroundColor = MaterialTheme.colors.primary, title = {
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-            if (showLogo) {
-                Icon(painter = painterResource(id = R.drawable.applogo),
-                    contentDescription = "app logo",
-                    modifier = Modifier
-                        .clip(shape = CircleShape)
-                        .clickable { },
-                    tint = MaterialTheme.colors.secondary)
-            }
-            Text(text = title, modifier = Modifier.padding(end = 15.dp),
+fun OurFridgeAppTopBar(onProfileClicked: () -> Unit = {}) {
+    TopAppBar(
+        modifier = Modifier, backgroundColor = MaterialTheme.colors.primary,
+        title = {
+            Text(text = "OurFridge", modifier = Modifier.padding(start = 70.dp),
                 color = MaterialTheme.colors.secondary,
                 fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            if (showProfile){
-                Icon(painter = painterResource(id = R.drawable.profile),
-                    contentDescription = "profile icon",
-                    modifier = Modifier
-                        .clip(shape = CircleShape)
-                        .clickable { },
-                    tint = MaterialTheme.colors.secondary)
-            }
-
-        }
-    })
+        },
+        navigationIcon = {
+            Icon(painter = painterResource(id = R.drawable.profile),
+                contentDescription = "profile icon",
+                modifier = Modifier
+                    .clip(shape = CircleShape)
+                    .clickable { onProfileClicked.invoke() },
+                tint = MaterialTheme.colors.secondary)
+        },
+    )
 }
 
 @Composable
@@ -81,10 +66,10 @@ fun OurFridgeAppBottomBar(navController: NavController) {
     BottomAppBar(modifier = Modifier, backgroundColor = MaterialTheme.colors.primary) {
         Row(modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly) {
-            BottomAppBarIcon(title = "People", icon = Icons.Default.People){
+            BottomAppBarIcon(title = "People", icon = Icons.Default.People) {
                 //TODO navController to people screen
             }
-            BottomAppBarIcon(title = "Home", icon = Icons.Default.Home){
+            BottomAppBarIcon(title = "Home", icon = Icons.Default.Home) {
                 ////TODO navController to home screen
             }
         }
@@ -92,19 +77,32 @@ fun OurFridgeAppBottomBar(navController: NavController) {
 }
 
 @Composable
-fun BottomAppBarIcon(title: String, icon: ImageVector, onClick: () -> Unit){
-    Column(modifier = Modifier.clickable{ onClick.invoke() },
+fun BottomAppBarIcon(title: String, icon: ImageVector, onClick: () -> Unit) {
+    Column(modifier = Modifier.clickable { onClick.invoke() },
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(imageVector = icon, contentDescription = title,modifier = Modifier.size(30.dp), tint = MaterialTheme.colors.secondary)
-        Text(text = title, modifier = Modifier, fontSize = 14.sp , color = MaterialTheme.colors.secondary)
+        Icon(imageVector = icon,
+            contentDescription = title,
+            modifier = Modifier.size(30.dp),
+            tint = MaterialTheme.colors.secondary)
+        Text(text = title,
+            modifier = Modifier,
+            fontSize = 14.sp,
+            color = MaterialTheme.colors.secondary)
     }
 }
 
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun UserForm(loading: Boolean = false, registration: Boolean = false, onSubmit: (email: String, password: String) -> Unit){
+fun UserForm(
+    navController: NavController,
+    userNotFound: Boolean = false,
+    emailAlreadyAtUse: Boolean = false,
+    loading: Boolean = false,
+    registration: Boolean = false,
+    onSubmit: (email: String, password: String) -> Unit,
+) {
 
     val modifier = Modifier
         .padding(top = 30.dp)
@@ -113,16 +111,17 @@ fun UserForm(loading: Boolean = false, registration: Boolean = false, onSubmit: 
         .verticalScroll(rememberScrollState())
 
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        val emailState = rememberSaveable{ mutableStateOf("") }
+        val emailState = rememberSaveable { mutableStateOf("") }
         val passwordState = rememberSaveable { mutableStateOf("") }
         val passwordAgainState = rememberSaveable { mutableStateOf("") }
         val passwordVisibility = rememberSaveable { mutableStateOf(false) }
         val passwordFocusRequest = remember { FocusRequester() }
         val passwordAgainFocusRequest = remember { FocusRequester() }
         val keyboardController = LocalSoftwareKeyboardController.current
-        val valid = remember(emailState.value, passwordState.value) {
-            if (registration){
-                emailState.value.trim().isNotEmpty() && passwordState.value.trim().isNotEmpty() && passwordAgainState.value.trim().isNotEmpty()
+        val valid = remember(emailState.value, passwordState.value, passwordAgainState.value) {
+            if (registration) {
+                emailState.value.trim().isNotEmpty() && passwordState.value.trim()
+                    .isNotEmpty() && passwordAgainState.value.trim().isNotEmpty()
             } else {
                 emailState.value.trim().isNotEmpty() && passwordState.value.trim().isNotEmpty()
             }
@@ -130,7 +129,7 @@ fun UserForm(loading: Boolean = false, registration: Boolean = false, onSubmit: 
         val validForm = remember { mutableStateOf(true) }
         val samePasswords = remember { mutableStateOf(true) }
 
-        EmailInput(emailState = emailState, onAction = KeyboardActions{
+        EmailInput(emailState = emailState, onAction = KeyboardActions {
             passwordFocusRequest.requestFocus()
         })
         PasswordInput(modifier = Modifier.focusRequester(passwordFocusRequest),
@@ -138,7 +137,7 @@ fun UserForm(loading: Boolean = false, registration: Boolean = false, onSubmit: 
             label = "Password",
             enabled = true,
             passwordVisibility = passwordVisibility,
-            onAction = KeyboardActions{
+            onAction = KeyboardActions {
                 passwordAgainFocusRequest.requestFocus()
             })
         if (registration) {
@@ -150,39 +149,61 @@ fun UserForm(loading: Boolean = false, registration: Boolean = false, onSubmit: 
                 passwordReply = registration)
         }
 
-        if (!samePasswords.value){
+        if (!samePasswords.value) {
             Text(text = "Passwords are not the same!",
                 modifier = Modifier.padding(top = 10.dp),
                 fontSize = 16.sp,
                 color = MaterialTheme.colors.error)
         }
 
-        SubmitButton(title = if (registration) "Register" else "Login" , loading, valid){
+        SubmitButton(title = if (registration) "Register" else "Login", loading, valid) {
             if (registration) {
-                samePasswords.value =  passwordState.value == passwordAgainState.value
+                samePasswords.value = passwordState.value == passwordAgainState.value
                 validForm.value = emailState.value.contains('@') && passwordState.value.length >= 6
             } else {
                 validForm.value = emailState.value.contains('@') && passwordState.value.length >= 6
             }
-            onSubmit(emailState.value, passwordState.value)
-        }
-        if (!validForm.value){
-            if (registration){
-                Text(text = "Email must include '@' and password must be at least 6 characters!",
-                    modifier = Modifier.padding(20.dp),
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colors.error,
-                    textAlign = TextAlign.Center)
-            } else {
-                Text(text = "Email or password is incorrect!",
-                    modifier = Modifier.padding(20.dp),
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colors.error,
-                    textAlign = TextAlign.Center)
+            if (registration && samePasswords.value && validForm.value ){
+                onSubmit(emailState.value, passwordState.value)
+            }
+            if (!registration && validForm.value){
+                onSubmit(emailState.value, passwordState.value)
             }
 
         }
+        Row(modifier = Modifier.padding(top = 5.dp)) {
+            if (registration) {
+                Text(text = "Already have account?")
+                Text(text = " Sign In",
+                    modifier = Modifier.clickable { navController.navigate(OurFridgeScreens.LoginScreen.name) },
+                    color = MaterialTheme.colors.secondary)
+            } else {
+                Text(text = "Your first time using app?")
+                Text(text = " Sign Up",
+                    modifier = Modifier.clickable { navController.navigate(OurFridgeScreens.RegistrationScreen.name) },
+                    color = MaterialTheme.colors.secondary)
+            }
+
+        }
+        if (!validForm.value && registration) {
+            ErrorMessage(text = "Email must include '@' and password must be at least 6 characters!")
+        }
+        if (userNotFound || !validForm.value) {
+            ErrorMessage(text = "Wrong email or password")
+        }
+        if (emailAlreadyAtUse) {
+            ErrorMessage(text = "Account with that email exist!")
+        }
     }
+}
+
+@Composable
+fun ErrorMessage(text: String) {
+    Text(text = text,
+        modifier = Modifier.padding(20.dp),
+        fontSize = 16.sp,
+        color = MaterialTheme.colors.error,
+        textAlign = TextAlign.Center)
 }
 
 @Composable
@@ -198,27 +219,30 @@ fun SubmitButton(title: String, loading: Boolean, validInputs: Boolean, onClick:
             contentColor = MaterialTheme.colors.secondary,
             disabledBackgroundColor = MaterialTheme.colors.primary,
             disabledContentColor = MaterialTheme.colors.background)) {
-        if (loading) CircularProgressIndicator()
-        else Text(text = title, modifier = Modifier, fontSize = 20.sp)
+        if (loading) {
+            CircularProgressIndicator(modifier = Modifier, color = MaterialTheme.colors.secondary)
+        } else Text(text = title, modifier = Modifier, fontSize = 20.sp)
     }
 }
 
 @Composable
-fun PasswordInput(modifier: Modifier,
-                  passwordState: MutableState<String>,
-                  label: String,
-                  enabled: Boolean,
-                  passwordReply: Boolean = false,
-                  passwordVisibility: MutableState<Boolean>,
-                  imeAction: ImeAction = ImeAction.Done,
-                  onAction: KeyboardActions = KeyboardActions.Default){
+fun PasswordInput(
+    modifier: Modifier,
+    passwordState: MutableState<String>,
+    label: String,
+    enabled: Boolean,
+    passwordReply: Boolean = false,
+    passwordVisibility: MutableState<Boolean>,
+    imeAction: ImeAction = ImeAction.Done,
+    onAction: KeyboardActions = KeyboardActions.Default,
+) {
     val visualTransformation = if (passwordVisibility.value) VisualTransformation.None else
         PasswordVisualTransformation()
-    OutlinedTextField(value = passwordState.value ,
+    OutlinedTextField(value = passwordState.value,
         onValueChange = {
             passwordState.value = it
         },
-        label = { Text(text = label)},
+        label = { Text(text = label) },
         singleLine = true,
         textStyle = TextStyle(fontSize = 18.sp),
         modifier = modifier
@@ -229,14 +253,14 @@ fun PasswordInput(modifier: Modifier,
             focusedBorderColor = MaterialTheme.colors.primaryVariant,
             focusedLabelColor = MaterialTheme.colors.primaryVariant,
             unfocusedBorderColor = MaterialTheme.colors.primary,
-            unfocusedLabelColor =  MaterialTheme.colors.primary,
+            unfocusedLabelColor = MaterialTheme.colors.primary,
             cursorColor = MaterialTheme.colors.primaryVariant
         ),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password,
             imeAction = imeAction),
         visualTransformation = visualTransformation,
-        trailingIcon = { if ( !passwordReply ) PasswordVisibility(passwordVisibility = passwordVisibility) }
+        trailingIcon = { if (!passwordReply) PasswordVisibility(passwordVisibility = passwordVisibility) }
     )
 }
 
@@ -251,13 +275,14 @@ fun PasswordVisibility(passwordVisibility: MutableState<Boolean>) {
 
 
 @Composable
-fun EmailInput(modifier: Modifier = Modifier,
-               emailState: MutableState<String>,
-               label: String = "Email",
-               enabled: Boolean = true,
-               imeAction: ImeAction = ImeAction.Next,
-               onAction: KeyboardActions
-){
+fun EmailInput(
+    modifier: Modifier = Modifier,
+    emailState: MutableState<String>,
+    label: String = "Email",
+    enabled: Boolean = true,
+    imeAction: ImeAction = ImeAction.Next,
+    onAction: KeyboardActions,
+) {
     InputField(modifier = modifier,
         valueState = emailState,
         label = label,
@@ -268,15 +293,16 @@ fun EmailInput(modifier: Modifier = Modifier,
 }
 
 @Composable
-fun InputField(modifier: Modifier = Modifier,
-               valueState: MutableState<String>,
-               label: String,
-               enabled: Boolean,
-               singleLine: Boolean = true,
-               keyboardType: KeyboardType,
-               imeAction: ImeAction = ImeAction.Next,
-               onAction: KeyboardActions = KeyboardActions.Default
-){
+fun InputField(
+    modifier: Modifier = Modifier,
+    valueState: MutableState<String>,
+    label: String,
+    enabled: Boolean,
+    singleLine: Boolean = true,
+    keyboardType: KeyboardType,
+    imeAction: ImeAction = ImeAction.Next,
+    onAction: KeyboardActions = KeyboardActions.Default,
+) {
     OutlinedTextField(
         modifier = modifier
             .padding(bottom = 10.dp, start = 10.dp, end = 10.dp)
@@ -290,10 +316,10 @@ fun InputField(modifier: Modifier = Modifier,
             focusedBorderColor = MaterialTheme.colors.primaryVariant,
             focusedLabelColor = MaterialTheme.colors.primaryVariant,
             unfocusedBorderColor = MaterialTheme.colors.primary,
-            unfocusedLabelColor =  MaterialTheme.colors.primary,
+            unfocusedLabelColor = MaterialTheme.colors.primary,
             cursorColor = MaterialTheme.colors.primaryVariant
         ),
-        textStyle = TextStyle (fontSize = 20.sp),
+        textStyle = TextStyle(fontSize = 20.sp),
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
         keyboardActions = onAction,
     )
@@ -304,7 +330,7 @@ fun FoodLabel(food: MFoodInside, onClick: () -> Unit) {
     Column(modifier = Modifier.padding(4.dp)) {
         Row(modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick.invoke() }){
+            .clickable { onClick.invoke() }) {
             Text(text = food.title.toString(), modifier = Modifier.padding(end = 18.dp))
             Text(text = food.quantity.toString(), modifier = Modifier.padding(end = 2.dp))
             Text(text = food.unit.toString())
