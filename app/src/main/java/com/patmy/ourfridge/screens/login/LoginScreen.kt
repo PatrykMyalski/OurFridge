@@ -30,12 +30,12 @@ fun LoginScreen(navController: NavController, viewModel: LoginScreenViewModel = 
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
             UserForm(navController,
                 userNotFound = userNotFound.value,
-                loading = loadingValue.value) { email: String, password: String ->
+                loading = loadingValue.value) { email: String, password: String, username: String ->
                 viewModel.signIn(email,
                     password,
                     toHome = { navController.navigate(OurFridgeScreens.FridgeHomeScreen.name) },
                     userNotFound = { userNotFound.value = true },
-                    changeLoadingValue = {loadingValue.value = !loadingValue.value})
+                    changeLoadingValue = {loadingValue.value = it})
             }
         }
     }

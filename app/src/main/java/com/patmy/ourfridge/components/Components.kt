@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -101,7 +102,7 @@ fun UserForm(
     emailAlreadyAtUse: Boolean = false,
     loading: Boolean = false,
     registration: Boolean = false,
-    onSubmit: (email: String, password: String) -> Unit,
+    onSubmit: (email: String, password: String, userName: String) -> Unit,
 ) {
 
     val modifier = Modifier
@@ -112,16 +113,22 @@ fun UserForm(
 
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         val emailState = rememberSaveable { mutableStateOf("") }
+        val userNameState = rememberSaveable { mutableStateOf("") }
         val passwordState = rememberSaveable { mutableStateOf("") }
         val passwordAgainState = rememberSaveable { mutableStateOf("") }
         val passwordVisibility = rememberSaveable { mutableStateOf(false) }
+        val userNameFocusRequest = remember { FocusRequester() }
         val passwordFocusRequest = remember { FocusRequester() }
         val passwordAgainFocusRequest = remember { FocusRequester() }
         val keyboardController = LocalSoftwareKeyboardController.current
-        val valid = remember(emailState.value, passwordState.value, passwordAgainState.value) {
+        val valid = remember(emailState.value,
+            passwordState.value,
+            passwordAgainState.value,
+            userNameState.value) {
             if (registration) {
                 emailState.value.trim().isNotEmpty() && passwordState.value.trim()
-                    .isNotEmpty() && passwordAgainState.value.trim().isNotEmpty()
+                    .isNotEmpty() && passwordAgainState.value.trim()
+                    .isNotEmpty() && userNameState.value.isNotEmpty()
             } else {
                 emailState.value.trim().isNotEmpty() && passwordState.value.trim().isNotEmpty()
             }
@@ -130,8 +137,23 @@ fun UserForm(
         val samePasswords = remember { mutableStateOf(true) }
 
         EmailInput(emailState = emailState, onAction = KeyboardActions {
-            passwordFocusRequest.requestFocus()
+            userNameFocusRequest.requestFocus()
         })
+        if (registration) {
+            InputField(modifier = Modifier.focusRequester(if (registration) userNameFocusRequest else passwordFocusRequest),
+                valueState = userNameState,
+                label = "Name",
+                enabled = true,
+                keyboardType = KeyboardType.Text,
+                onAction = KeyboardActions {
+                    passwordFocusRequest.requestFocus()
+                })
+            if (!valid && !validForm.value) {
+                if (userNameState.value.length < 2) {
+                    ErrorMessage(text = "Username must be at least 2 characters long")
+                }
+            }
+        }
         PasswordInput(modifier = Modifier.focusRequester(passwordFocusRequest),
             passwordState = passwordState,
             label = "Password",
@@ -149,6 +171,7 @@ fun UserForm(
                 passwordReply = registration)
         }
 
+
         if (!samePasswords.value) {
             Text(text = "Passwords are not the same!",
                 modifier = Modifier.padding(top = 10.dp),
@@ -163,11 +186,11 @@ fun UserForm(
             } else {
                 validForm.value = emailState.value.contains('@') && passwordState.value.length >= 6
             }
-            if (registration && samePasswords.value && validForm.value ){
-                onSubmit(emailState.value, passwordState.value)
+            if (registration && samePasswords.value && validForm.value) {
+                onSubmit(emailState.value, passwordState.value, userNameState.value)
             }
-            if (!registration && validForm.value){
-                onSubmit(emailState.value, passwordState.value)
+            if (!registration && validForm.value) {
+                onSubmit(emailState.value, passwordState.value, "")
             }
 
         }
@@ -188,7 +211,7 @@ fun UserForm(
         if (!validForm.value && registration) {
             ErrorMessage(text = "Email must include '@' and password must be at least 6 characters!")
         }
-        if (userNotFound || !validForm.value) {
+        if ((userNotFound || !validForm.value) && !registration) {
             ErrorMessage(text = "Wrong email or password")
         }
         if (emailAlreadyAtUse) {
@@ -260,7 +283,8 @@ fun PasswordInput(
             keyboardType = KeyboardType.Password,
             imeAction = imeAction),
         visualTransformation = visualTransformation,
-        trailingIcon = { if (!passwordReply) PasswordVisibility(passwordVisibility = passwordVisibility) }
+        trailingIcon = { if (!passwordReply) PasswordVisibility(passwordVisibility = passwordVisibility) },
+        keyboardActions = onAction
     )
 }
 
@@ -336,5 +360,26 @@ fun FoodLabel(food: MFoodInside, onClick: () -> Unit) {
             Text(text = food.unit.toString())
         }
         Divider(modifier = Modifier.fillMaxWidth(), color = Color.Black, thickness = 1.dp)
+    }
+}
+
+@Composable
+fun AddFoodMenuButtons(
+    title: String,
+    elevation: ButtonElevation?,
+    colors: ButtonColors,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    Button(onClick = { onClick.invoke() },
+        modifier = Modifier
+            .width(130.dp)
+            .height(50.dp)
+            .padding(horizontal = 10.dp),
+        elevation = elevation,
+        shape = RoundedCornerShape(25),
+        colors = colors,
+        enabled = enabled) {
+        Text(text = title)
     }
 }

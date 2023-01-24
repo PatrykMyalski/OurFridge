@@ -2,7 +2,6 @@ package com.patmy.ourfridge.screens.splash
 
 
 import android.view.animation.OvershootInterpolator
-import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -19,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -46,7 +44,7 @@ fun SplashScreen(navController: NavController) {
                             .getInterpolation(it)
                     }))
             delay(1800L)
-            if(FirebaseAuth.getInstance().currentUser?.email.isNullOrEmpty()){
+            if (FirebaseAuth.getInstance().currentUser?.email.isNullOrEmpty()) {
                 navController.navigate(OurFridgeScreens.LoginScreen.name)
             } else {
                 navController.navigate(OurFridgeScreens.FridgeHomeScreen.name)

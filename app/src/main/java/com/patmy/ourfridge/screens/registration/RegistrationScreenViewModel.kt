@@ -6,7 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import com.patmy.ourfridge.model.MUser
 import kotlinx.coroutines.launch
 
 class RegistrationScreenViewModel : ViewModel() {
@@ -15,7 +17,14 @@ class RegistrationScreenViewModel : ViewModel() {
     private val loading = MutableLiveData(false)
 
 
-    fun signUp(email: String, password: String, toHome: () -> Unit, emailAlreadyAtUse: () -> Unit, changeLoadingValue: () -> Unit) {
+    fun signUp(
+        email: String,
+        password: String,
+        userName: String,
+        toHome: (currentUser: MUser) -> Unit,
+        emailAlreadyAtUse: () -> Unit,
+        changeLoadingValue: () -> Unit,
+    ) {
         viewModelScope.launch {
             try {
                 changeLoadingValue()
@@ -24,8 +33,13 @@ class RegistrationScreenViewModel : ViewModel() {
                         loading.value = true
                         if (task.isSuccessful) {
                             Log.d("FB", "signUp Successful: ${task.result}")
+                            val database = Firebase.database
+                            val myRef = database.getReferenceFromUrl("https://ourfridge-efd59-default-rtdb.europe-west1.firebasedatabase.app/users")
+                            val userUId = Firebase.auth.currentUser?.uid
+                            val user = MUser(email, userName, userUId)
+                            myRef.child(userUId.toString()).setValue(user)
                             changeLoadingValue()
-                            toHome()
+                            toHome(user)
                         } else {
                             Log.d("FB", "signUp unsuccessful: ${task.exception}")
                             changeLoadingValue()
