@@ -20,8 +20,8 @@ class RegistrationScreenViewModel : ViewModel() {
     fun signUp(
         email: String,
         password: String,
-        userName: String,
-        toHome: (currentUser: MUser) -> Unit,
+        username: String,
+        toHome: () -> Unit,
         emailAlreadyAtUse: () -> Unit,
         changeLoadingValue: () -> Unit,
     ) {
@@ -36,10 +36,10 @@ class RegistrationScreenViewModel : ViewModel() {
                             val database = Firebase.database
                             val myRef = database.getReferenceFromUrl("https://ourfridge-efd59-default-rtdb.europe-west1.firebasedatabase.app/users")
                             val userUId = Firebase.auth.currentUser?.uid
-                            val user = MUser(email, userName, userUId)
+                            val user = MUser(email, username)
                             myRef.child(userUId.toString()).setValue(user)
                             changeLoadingValue()
-                            toHome(user)
+                            toHome()
                         } else {
                             Log.d("FB", "signUp unsuccessful: ${task.exception}")
                             changeLoadingValue()

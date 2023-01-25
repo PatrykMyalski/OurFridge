@@ -8,8 +8,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.components.*
 import com.patmy.ourfridge.model.MFoodInside
@@ -29,10 +26,11 @@ import com.patmy.ourfridge.navigation.OurFridgeScreens
 import kotlinx.coroutines.launch
 
 @Composable
-fun FridgeHomeScreen(navController: NavController, currentMUser: MUser? = null) {
-
-    // TODO check if user is having active fridge, if not then ask him if he want to create one or join to already created one
-    //
+fun FridgeHomeScreen(
+    navController: NavController,
+    start: Boolean = true,
+    viewModel: FridgeHomeScreenViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+) {
 
 
     val DUMMY_LIST = listOf(
@@ -152,11 +150,31 @@ fun FridgeHomeScreen(navController: NavController, currentMUser: MUser? = null) 
             idOfCreator = "Patryk Myalski"),
     )
 
+    val fridgeId = remember {
+        mutableStateOf("")
+    }
 
-    println(Firebase.auth.currentUser?.uid)
-    println(Firebase.auth.tenantId)
+    val currentUser = remember {
+        mutableStateOf(MUser("", "", ""))
+    }
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
+    val loadingData = remember {
+        mutableStateOf(true)
+    }
+    val loadingFridge = remember {
+        mutableStateOf(false)
+    }
+
+    if (start) {
+        viewModel.GetData {
+            currentUser.value = it
+            fridgeId.value = currentUser.value.fridge
+            loadingData.value = false
+        }
+    }
+
+
     Scaffold(scaffoldState = scaffoldState,
         topBar = {
             OurFridgeAppTopBar(onProfileClicked = {
@@ -175,23 +193,40 @@ fun FridgeHomeScreen(navController: NavController, currentMUser: MUser? = null) 
             OurFridgeAppBottomBar(navController)
         }) {
 
+        if (loadingData.value) {
+            Column(modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center) {
+                CircularProgressIndicator(color = MaterialTheme.colors.secondary)
+            }
 
-        HomeScreenView(data = DUMMY_LIST)
+        } else {
+            HomeScreenView(fridgeId = fridgeId.value,
+                loadingFridge = loadingFridge.value,
+                onJoinFridge = { /*TODO*/ },
+                onCreateFridge = {
+                    loadingFridge.value = true
+                    viewModel.createFridge(currentUser.value)
+                })
+        }
 
 
     }
 }
 
 
-
-
-
 @Composable
-fun HomeScreenView(data: List<MFoodInside> = emptyList()) {
+fun HomeScreenView(
+    data: List<MFoodInside> = emptyList(),
+    fridgeId: String,
+    loadingFridge: Boolean, //TODO circular progression if creating fridge or joining
+    onJoinFridge: () -> Unit,
+    onCreateFridge: () -> Unit,
+) {
 
     val showFoodInfo = remember { mutableStateOf(false) }
     val foodInfo = remember {
-        mutableStateOf(MFoodInside(id = "2asd1",
+        mutableStateOf(MFoodInside(id = "2asd1",    //Todo
             title = "Food",
             quantity = "200",
             unit = "g",
@@ -216,7 +251,7 @@ fun HomeScreenView(data: List<MFoodInside> = emptyList()) {
             Column(modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())) {
-                if (data.isNullOrEmpty()) {
+                if (fridgeId == "null" || fridgeId == "") {
                     Text(text = "Add what you have in your fridge...",
                         modifier = Modifier.padding(2.dp),
                         color = Color.Gray)
@@ -230,21 +265,34 @@ fun HomeScreenView(data: List<MFoodInside> = emptyList()) {
                 }
             }
         }
-        Card(modifier = Modifier
-            .width(340.dp)
-            .height(50.dp)
-            .clickable { showAddFoodMenu.value = true },
-            shape = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp),
-            backgroundColor = MaterialTheme.colors.primary) {
-            Column(verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "+Add food",
-                    modifier = Modifier,
-                    color = MaterialTheme.colors.secondary,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold)
+        if (fridgeId == "null" || fridgeId == "") {
+            Row(modifier = Modifier.width(340.dp),
+                horizontalArrangement = Arrangement.SpaceBetween) {
+                JoinOrCreateFridgeButtons(title = "Join fridge") {
+                    onJoinFridge()
+                }
+                JoinOrCreateFridgeButtons(title = "Create fridge") {
+                    onCreateFridge()
+                }
+            }
+        } else {
+            Card(modifier = Modifier
+                .width(340.dp)
+                .height(50.dp)
+                .clickable { showAddFoodMenu.value = true },
+                shape = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp),
+                backgroundColor = MaterialTheme.colors.primary) {
+                Column(verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "+Add food",
+                        modifier = Modifier,
+                        color = MaterialTheme.colors.secondary,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold)
+                }
             }
         }
+
     }
     if (showFoodInfo.value) {
         ShowFoodInfo(foodInfo) {
@@ -254,6 +302,24 @@ fun HomeScreenView(data: List<MFoodInside> = emptyList()) {
     if (showAddFoodMenu.value) {
         AddFoodMenu() {
             showAddFoodMenu.value = false
+        }
+    }
+}
+
+@Composable
+fun JoinOrCreateFridgeButtons(title: String, onClick: () -> Unit) {
+    Card(modifier = Modifier
+        .height(50.dp)
+        .clickable { onClick() },
+        shape = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp),
+        backgroundColor = MaterialTheme.colors.primary) {
+        Column(verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = title,
+                modifier = Modifier.padding(horizontal = 20.dp),
+                color = MaterialTheme.colors.secondary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold)
         }
     }
 }
@@ -357,7 +423,6 @@ fun AddFoodMenu(onClose: () -> Unit) {
         }
     }
 }
-
 
 
 @Composable

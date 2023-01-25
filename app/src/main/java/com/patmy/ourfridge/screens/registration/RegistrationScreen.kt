@@ -32,8 +32,8 @@ fun RegistrationScreen(
             UserForm(navController,
                 registration = true,
                 emailAlreadyAtUse = emailAlreadyAtUse.value,
-                loading = loadingValue.value) { email: String, password: String, userName: String ->
-                viewModel.signUp(email = email, password = password, userName = userName,
+                loading = loadingValue.value) { email: String, password: String, username: String ->
+                viewModel.signUp(email = email, password = password, username = username,
                     toHome = { navController.navigate(OurFridgeScreens.FridgeHomeScreen.name) },
                     emailAlreadyAtUse = { emailAlreadyAtUse.value = true },
                     changeLoadingValue = { loadingValue.value = !loadingValue.value })

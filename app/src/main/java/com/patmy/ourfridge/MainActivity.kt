@@ -11,8 +11,6 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.google.firebase.auth.FirebaseAuth
 import com.patmy.ourfridge.navigation.OurFridgeNavigation
 import com.patmy.ourfridge.ui.theme.OurFridgeTheme
 
@@ -33,7 +31,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun OurFridgeApp(){
+fun OurFridgeApp() {
     Surface(modifier = Modifier,
         color = MaterialTheme.colors.background) {
         Column(verticalArrangement = Arrangement.Center,
