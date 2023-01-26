@@ -1,12 +1,10 @@
 package com.patmy.ourfridge.screens.home
 
 import android.util.Log
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.ktx.database
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.model.MFHistory
 import com.patmy.ourfridge.model.MFoodInside
@@ -15,63 +13,53 @@ import com.patmy.ourfridge.model.MUser
 
 class FridgeHomeScreenViewModel : ViewModel() {
 
-    private val database = Firebase.database
-    private val myRef =
-        database.getReferenceFromUrl("https://ourfridge-efd59-default-rtdb.europe-west1.firebasedatabase.app/")
     private val userUId = Firebase.auth.currentUser?.uid.toString()
+    private val db = Firebase.firestore
 
-    @Composable
-    fun GetData(onDone: (MUser) -> Unit) {
-        val emailState = remember {
-            mutableStateOf("")
-        }
-        val usernameState = remember {
-            mutableStateOf("")
-        }
-        val fridgeState = remember {
-            mutableStateOf("")
-        }
-        myRef.child("users").child(userUId).child("email").get().addOnSuccessListener {
-            emailState.value = it.value.toString()
-        }.addOnFailureListener {
-            Log.d("FB", "Exception during email request: $it")
-        }
-        myRef.child("users").child(userUId).child("username").get().addOnSuccessListener {
-            usernameState.value = it.value.toString()
-        }.addOnFailureListener {
-            Log.d("FB", "Exception during username request: $it")
-        }
-        myRef.child("users").child(userUId).child("fridge").get().addOnSuccessListener {
-            fridgeState.value = it.value.toString()
-        }.addOnFailureListener {
-            Log.d("FB", "Exception during fridgeId request: $it")
-        }
-        onDone(MUser(emailState.value, usernameState.value, fridgeState.value))
+    fun getData(onDone: (MUser?, MFridge?) -> Unit) {
+        db.collection("users").document(userUId).get().addOnSuccessListener { userData ->
+            val currentUser = userData.toObject<MUser>()
+            if (currentUser?.fridge !== null) {
+                db.collection("fridges").document(currentUser.fridge.toString()).get()
+                    .addOnSuccessListener { fridgeData ->
+                        val currentFridge = fridgeData.toObject<MFridge>()
+                        onDone(currentUser, currentFridge)
+                    }.addOnFailureListener {
+                    Log.d("FB",
+                        "Exception occurs when tries to get fridge data: $it")
+                }
+            } else {
+                val currentFridge = null
+                onDone(currentUser, currentFridge)
+            }
+        }.addOnFailureListener { Log.d("FB", "Exception occurs when tries to get user data: $it") }
     }
 
-    fun createFridge(creator: MUser) {
+    fun createFridge(
+        currentUser: MUser?,
+        onFridgeCreated: (newFridge: MFridge?, currentUser: MUser?) -> Unit,
+    ) {
 
-        creator.fridge = userUId
+        currentUser?.fridge = userUId
 
-        val emptyMFHistory =
-            MFHistory(historyId = "0", foodId = "0", fridgeId = "0", creatorId = "0", event = "0")
+        val emptyHistoryArray = listOf<MFHistory?>(MFHistory())
+        val emptyFridgeFoodArray = listOf<MFoodInside?>(MFoodInside())
+        val userList = listOf(currentUser)
 
-        val emptyMFoodInside = MFoodInside(id = "0",
-            title = "0",
-            quantity = "0",
-            unit = "0",
-            date = "0",
-            idOfCreator = "0")
+        val newFridge = MFridge(userList, emptyFridgeFoodArray, emptyHistoryArray)
 
-        val newFridge = MFridge(fridgeUsers = listOf(creator),
-            foodInside = listOf(emptyMFoodInside),
-            fridgeHistory = listOf(emptyMFHistory))
-
-        myRef.child("fridges").child(userUId).setValue(newFridge).addOnSuccessListener {
-            myRef.child("users").child(userUId).child("fridge").setValue(userUId)
+        db.collection("fridges").document(userUId).set(newFridge).addOnSuccessListener {
+            db.collection("users").document(userUId).update("fridge", userUId)
                 .addOnSuccessListener {
-                    println("succes")
+                    onFridgeCreated(newFridge, currentUser)
+                }.addOnFailureListener {
+                    Log.d("FB",
+                        "Exception occurs when updating fridgeId in User data: $it")
                 }
+
+        }.addOnFailureListener {
+            Log.d("FB", "Exception occur when creating new fridge: $it")
         }
     }
 }
+

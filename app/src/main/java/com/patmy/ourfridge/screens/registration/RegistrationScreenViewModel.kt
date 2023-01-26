@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.ktx.database
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.model.MUser
@@ -15,9 +14,7 @@ import kotlinx.coroutines.launch
 class RegistrationScreenViewModel : ViewModel() {
     private val auth: FirebaseAuth = Firebase.auth
     private val db = Firebase.firestore
-
     private val loading = MutableLiveData(false)
-
 
     fun signUp(
         email: String,
@@ -35,11 +32,16 @@ class RegistrationScreenViewModel : ViewModel() {
                         loading.value = true
                         if (task.isSuccessful) {
                             Log.d("FB", "signUp Successful: ${task.result}")
-                            //val database = Firebase.database
-                            //val myRef = database.getReferenceFromUrl("https://ourfridge-efd59-default-rtdb.europe-west1.firebasedatabase.app/users")
-                            val userUId = Firebase.auth.currentUser?.uid
+                            val userUId = Firebase.auth.currentUser?.uid.toString()
                             val user = MUser(email, username)
-                            //myRef.child(userUId.toString()).setValue(user)
+
+                            db.collection("users").document(userUId).set(user)
+                                .addOnSuccessListener {
+                                    Log.d("FB", "User successfully created in firestore")
+                                }.addOnFailureListener {
+                                Log.d("FB",
+                                    "Exception occurs when setting user in firestore: $it")
+                            }
                             changeLoadingValue()
                             toHome()
                         } else {

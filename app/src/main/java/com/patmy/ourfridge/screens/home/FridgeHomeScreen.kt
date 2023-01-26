@@ -1,5 +1,6 @@
 package com.patmy.ourfridge.screens.home
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -21,6 +22,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.components.*
 import com.patmy.ourfridge.model.MFoodInside
+import com.patmy.ourfridge.model.MFridge
 import com.patmy.ourfridge.model.MUser
 import com.patmy.ourfridge.navigation.OurFridgeScreens
 import kotlinx.coroutines.launch
@@ -28,8 +30,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun FridgeHomeScreen(
     navController: NavController,
-    //start: Boolean = true,
-    //viewModel: FridgeHomeScreenViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    viewModel: FridgeHomeScreenViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
 ) {
 
 
@@ -150,32 +151,48 @@ fun FridgeHomeScreen(
             idOfCreator = "Patryk Myalski"),
     )
 
-/*
+
     val fridgeId = remember {
-        mutableStateOf("")
+        mutableStateOf<String?>(null)
     }
-*/
 
-/*    val currentUser = remember {
-        mutableStateOf(MUser("", "", ""))
-    }*/
+    val fridge = remember {
+        mutableStateOf<MFridge?>(MFridge())
+    }
+
+    val currentUser = remember {
+        mutableStateOf<MUser?>(null)
+    }
+
     val scaffoldState = rememberScaffoldState()
+
     val scope = rememberCoroutineScope()
-/*    val loadingData = remember {
+
+    val loadingData = remember {
         mutableStateOf(true)
-    }*/
-/*    val loadingFridge = remember {
+    }
+
+    val loadingFridge = remember {
         mutableStateOf(false)
-    }*/
+    }
 
-/*    if (start) {
-        viewModel.GetData {
-            currentUser.value = it
-            fridgeId.value = currentUser.value.fridge
-            loadingData.value = false
+    if (currentUser.value == null) {
+        viewModel.getData { updateUser, updateFridge ->
+            if (updateUser !== null) {
+                currentUser.value = updateUser
+                fridgeId.value = updateUser.fridge
+                loadingData.value = false
+            } else {
+                Log.d("FB", "ERROR: Cannot get user from firestore")
+            }
+            if (updateFridge !== null) {
+                fridge.value = updateFridge
+                loadingData.value = false
+            } else {
+                loadingData.value = false
+            }
         }
-    }*/
-
+    }
 
     Scaffold(scaffoldState = scaffoldState,
         topBar = {
@@ -194,46 +211,42 @@ fun FridgeHomeScreen(
         bottomBar = {
             OurFridgeAppBottomBar(navController)
         }) {
-
-/*        if (loadingData.value) {
+        if (loadingData.value) {
             Column(modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center) {
                 CircularProgressIndicator(color = MaterialTheme.colors.secondary)
             }
-
-        } else {*/
-            HomeScreenView(/*fridgeId = fridgeId.value,
+        } else {
+            HomeScreenView(data = fridge.value!!.foodInside, fridgeId = fridgeId.value,
                 loadingFridge = loadingFridge.value,
-                onJoinFridge = { *//*TODO*//* },
+                onJoinFridge = { /*TODO*/ },
                 onCreateFridge = {
                     loadingFridge.value = true
-                    viewModel.createFridge(currentUser.value)
-                }*/)
-        //}
-
-
+                    viewModel.createFridge(currentUser.value) { updateFridge, updateCurrentUser ->
+                        fridgeId.value = updateCurrentUser?.fridge
+                        currentUser.value = updateCurrentUser
+                        fridge.value = updateFridge
+                        loadingFridge.value = false
+                    }
+                })
+        }
     }
 }
 
 
 @Composable
 fun HomeScreenView(
-    data: List<MFoodInside> = emptyList(),
-/*    fridgeId: String,
+    data: List<MFoodInside?> = listOf(null),
+    fridgeId: String?,
     loadingFridge: Boolean,
     onJoinFridge: () -> Unit,
-    onCreateFridge: () -> Unit,*/
+    onCreateFridge: () -> Unit,
 ) {
 
     val showFoodInfo = remember { mutableStateOf(false) }
     val foodInfo = remember {
-        mutableStateOf(MFoodInside(id = "2asd1",    //Todo
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"))
+        mutableStateOf<MFoodInside?>(null)
     }
     val showAddFoodMenu = remember {
         mutableStateOf(false)
@@ -253,31 +266,46 @@ fun HomeScreenView(
             Column(modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())) {
-                //if (fridgeId == "null" || fridgeId == "") {
-                    Text(text = "Add what you have in your fridge...",
-                        modifier = Modifier.padding(2.dp),
-                        color = Color.Gray)
-/*                } else {
-                    for (food in data) {
-                        FoodLabel(food) {
-                            showFoodInfo.value = true
-                            foodInfo.value = food
+                if (loadingFridge) {
+                    CircularProgressIndicator(color = MaterialTheme.colors.primary)
+                } else {
+                    if (fridgeId == null || fridgeId == "null") {
+                        Text(text = "Join or create fridge",
+                            modifier = Modifier.padding(2.dp),
+                            color = Color.Gray)
+                    } else {
+                        if (data.isNullOrEmpty()) {
+                            Text(text = "Add what you have in fridge...",
+                                modifier = Modifier.padding(2.dp),
+                                color = Color.Gray)
+                        } else if (data[0]?.title == null) {
+                            Text(text = "Add what you have in fridge...",
+                                modifier = Modifier.padding(2.dp),
+                                color = Color.Gray)
+                        } else {
+                            for (food in data) {
+                                println(food)
+                                FoodLabel(food) {
+                                    showFoodInfo.value = true
+                                    foodInfo.value = food
+                                }
+                            }
                         }
                     }
-                }*/
+                }
             }
         }
-/*        if (fridgeId == "null" || fridgeId == "") {
+        if (fridgeId == null || fridgeId == "null") {
             Row(modifier = Modifier.width(340.dp),
                 horizontalArrangement = Arrangement.SpaceBetween) {
                 JoinOrCreateFridgeButtons(title = "Join fridge") {
-                    //onJoinFridge()
+                    onJoinFridge()
                 }
                 JoinOrCreateFridgeButtons(title = "Create fridge") {
-                    //onCreateFridge()
+                    onCreateFridge()
                 }
             }
-        } else {*/
+        } else {
             Card(modifier = Modifier
                 .width(340.dp)
                 .height(50.dp)
@@ -293,7 +321,7 @@ fun HomeScreenView(
                         fontWeight = FontWeight.Bold)
                 }
             }
-        //}
+        }
 
     }
     if (showFoodInfo.value) {
@@ -428,8 +456,10 @@ fun AddFoodMenu(onClose: () -> Unit) {
 
 
 @Composable
-fun ShowFoodInfo(foodInfo: MutableState<MFoodInside>, onClose: () -> Unit) {
+fun ShowFoodInfo(foodInfo: MutableState<MFoodInside?>, onClose: () -> Unit) {
     val textModifier = Modifier.padding(bottom = 3.dp)
+    val foodData = foodInfo.value
+
     Card(modifier = Modifier.fillMaxSize(), backgroundColor = Color(0x67000000)) {
         Card(modifier = Modifier
             .fillMaxSize()
@@ -440,11 +470,11 @@ fun ShowFoodInfo(foodInfo: MutableState<MFoodInside>, onClose: () -> Unit) {
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally) {
                 Column(verticalArrangement = Arrangement.Top) {
-                    Text(text = "Food Name: ${foodInfo.value.title}", modifier = textModifier)
-                    Text(text = "In fridge is: ${foodInfo.value.quantity}${foodInfo.value.unit}",
+                    Text(text = "Food Name: ${foodData?.title}", modifier = textModifier)
+                    Text(text = "In fridge is: ${foodData?.quantity}${foodData?.unit}",
                         modifier = textModifier)
-                    Text(text = "Added: ${foodInfo.value.date}", modifier = textModifier)
-                    Text(text = "Added by: ${foodInfo.value.idOfCreator}")
+                    Text(text = "Added: ${foodData?.date}", modifier = textModifier)
+                    Text(text = "Added by: ${foodData?.idOfCreator}")
                 }
                 Card(modifier = Modifier
                     .padding(6.dp)

@@ -62,14 +62,14 @@ fun InputField(
 }
 
 @Composable
-fun FoodLabel(food: MFoodInside, onClick: () -> Unit) {
+fun FoodLabel(food: MFoodInside?, onClick: () -> Unit) {
     Column(modifier = Modifier.padding(4.dp)) {
         Row(modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick.invoke() }) {
-            Text(text = food.title.toString(), modifier = Modifier.padding(end = 18.dp))
-            Text(text = food.quantity.toString(), modifier = Modifier.padding(end = 2.dp))
-            Text(text = food.unit.toString())
+            Text(text = food?.title.toString(), modifier = Modifier.padding(end = 18.dp))
+            Text(text = food?.quantity.toString(), modifier = Modifier.padding(end = 2.dp))
+            Text(text = food?.unit.toString())
         }
         Divider(modifier = Modifier.fillMaxWidth(), color = Color.Black, thickness = 1.dp)
     }
