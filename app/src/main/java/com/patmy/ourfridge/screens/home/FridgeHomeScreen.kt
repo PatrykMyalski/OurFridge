@@ -34,124 +34,6 @@ fun FridgeHomeScreen(
 ) {
 
 
-    val DUMMY_LIST = listOf(
-        MFoodInside(id = "2asd11",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd12",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd13",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd14",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd15",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd16",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd17",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd18",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd19",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd10",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd111",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd112",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd113",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd114",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd115",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd116",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd117",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd118",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-        MFoodInside(id = "2asd119",
-            title = "Food",
-            quantity = "200",
-            unit = "g",
-            date = "16/01/2023",
-            idOfCreator = "Patryk Myalski"),
-    )
-
-
     val fridgeId = remember {
         mutableStateOf<String?>(null)
     }
@@ -170,6 +52,10 @@ fun FridgeHomeScreen(
 
     val loadingData = remember {
         mutableStateOf(true)
+    }
+
+    val loadingInAddFoodForm = remember {
+        mutableStateOf(false)
     }
 
     val loadingFridge = remember {
@@ -220,6 +106,7 @@ fun FridgeHomeScreen(
         } else {
             HomeScreenView(data = fridge.value!!.foodInside, fridgeId = fridgeId.value,
                 loadingFridge = loadingFridge.value,
+                loadingInAddFoodForm = loadingInAddFoodForm.value,
                 onJoinFridge = { /*TODO*/ },
                 onCreateFridge = {
                     loadingFridge.value = true
@@ -229,7 +116,17 @@ fun FridgeHomeScreen(
                         fridge.value = updateFridge
                         loadingFridge.value = false
                     }
-                })
+                },
+                onAddFoodToFridge = {
+                    loadingInAddFoodForm.value = true
+                    viewModel.addFoodToFridge(it,
+                        currentUser.value,
+                        fridge.value!!) { updatedFridge ->
+                        fridge.value = updatedFridge
+                        loadingInAddFoodForm.value = false
+                    }
+                }
+            )
         }
     }
 }
@@ -240,8 +137,10 @@ fun HomeScreenView(
     data: List<MFoodInside?> = listOf(null),
     fridgeId: String?,
     loadingFridge: Boolean,
+    loadingInAddFoodForm: Boolean,
     onJoinFridge: () -> Unit,
     onCreateFridge: () -> Unit,
+    onAddFoodToFridge: (MFoodInside) -> Unit,
 ) {
 
     val showFoodInfo = remember { mutableStateOf(false) }
@@ -284,7 +183,6 @@ fun HomeScreenView(
                                 color = Color.Gray)
                         } else {
                             for (food in data) {
-                                println(food)
                                 FoodLabel(food) {
                                     showFoodInfo.value = true
                                     foodInfo.value = food
@@ -330,9 +228,13 @@ fun HomeScreenView(
         }
     }
     if (showAddFoodMenu.value) {
-        AddFoodMenu() {
+        AddFoodMenu(loading = loadingInAddFoodForm, onClose = {
             showAddFoodMenu.value = false
-        }
+        }, onAdd = { newFoodTitle, newFoodQuantity, newFoodUnit ->
+            onAddFoodToFridge(MFoodInside(title = newFoodTitle,
+                quantity = newFoodQuantity,
+                unit = newFoodUnit))
+        })
     }
 }
 
@@ -355,20 +257,22 @@ fun JoinOrCreateFridgeButtons(title: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun AddFoodMenu(onClose: () -> Unit) {
+fun AddFoodMenu(
+    loading: Boolean,
+    onClose: () -> Unit,
+    onAdd: (foodTitle: String, foodQuantity: String, foodUnit: String) -> Unit,
+) {
     val foodTitleState = remember {
         mutableStateOf("")
     }
     val foodQuantityState = remember {
         mutableStateOf("")
     }
-    val radioOptions = listOf("piece", "g", "kg", "l")
-    val (selectedOption, onOptionSelected) = remember {
-        mutableStateOf(radioOptions[0])
+    val radioUnits = listOf("piece", "g", "kg", "l")
+    val (selectedUnit, onUnitSelected) = remember {
+        mutableStateOf(radioUnits[0])
     }
-    val addingLoadingState = remember {
-        mutableStateOf(false)
-    }
+
     val interactionSource = MutableInteractionSource()
 
     Card(modifier = Modifier
@@ -398,18 +302,18 @@ fun AddFoodMenu(onClose: () -> Unit) {
                         enabled = true,
                         keyboardType = KeyboardType.Number)
                     Row {
-                        radioOptions.forEach { text ->
+                        radioUnits.forEach { text ->
                             Row(modifier = Modifier
                                 .selectable(
-                                    selected = (text == selectedOption),
+                                    selected = (text == selectedUnit),
                                     onClick = {
-                                        onOptionSelected(text)
+                                        onUnitSelected(text)
                                     }
                                 )
                                 .padding(4.dp),
                                 verticalAlignment = Alignment.CenterVertically) {
-                                RadioButton(selected = (text == selectedOption),
-                                    onClick = { onOptionSelected(text) })
+                                RadioButton(selected = (text == selectedUnit),
+                                    onClick = { onUnitSelected(text) })
                                 Text(text = text)
                             }
                         }
@@ -431,7 +335,7 @@ fun AddFoodMenu(onClose: () -> Unit) {
                             onClose()
                         }
 
-                        AddFoodMenuButtons(title = "+Add",
+                        AddFoodMenuButtons(title = if (loading) "Loading..." else "+Add",
                             elevation = ButtonDefaults.elevation(
                                 defaultElevation = 5.dp,
                                 pressedElevation = 3.dp,
@@ -445,7 +349,10 @@ fun AddFoodMenu(onClose: () -> Unit) {
                                 disabledContentColor = MaterialTheme.colors.background),
                             enabled = foodTitleState.value.trim()
                                 .isNotEmpty() && foodQuantityState.value.trim().isNotEmpty()) {
-                            //TODO adding to firebase database
+                            onAdd(foodTitleState.value, foodQuantityState.value, selectedUnit)
+                            if (!loading) {
+                                onClose()
+                            }
                         }
                     }
                 }
@@ -459,11 +366,16 @@ fun AddFoodMenu(onClose: () -> Unit) {
 fun ShowFoodInfo(foodInfo: MutableState<MFoodInside?>, onClose: () -> Unit) {
     val textModifier = Modifier.padding(bottom = 3.dp)
     val foodData = foodInfo.value
+    val interactionSource = MutableInteractionSource()
 
-    Card(modifier = Modifier.fillMaxSize(), backgroundColor = Color(0x67000000)) {
+    Card(modifier = Modifier
+        .fillMaxSize()
+        .clickable(interactionSource = interactionSource, indication = null) {
+            onClose.invoke()
+        }, backgroundColor = Color(0x67000000)) {
         Card(modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 270.dp, start = 30.dp, end = 30.dp, bottom = 180.dp),
+            .padding(top = 270.dp, start = 30.dp, end = 30.dp, bottom = 180.dp)
+            .clickable(interactionSource = interactionSource, indication = null) {},
             backgroundColor = MaterialTheme.colors.background,
             shape = RoundedCornerShape(10)) {
             Column(modifier = Modifier.padding(top = 10.dp),
@@ -474,7 +386,7 @@ fun ShowFoodInfo(foodInfo: MutableState<MFoodInside?>, onClose: () -> Unit) {
                     Text(text = "In fridge is: ${foodData?.quantity}${foodData?.unit}",
                         modifier = textModifier)
                     Text(text = "Added: ${foodData?.date}", modifier = textModifier)
-                    Text(text = "Added by: ${foodData?.idOfCreator}")
+                    Text(text = "Added by: ${foodData?.nameOfCreator}")
                 }
                 Card(modifier = Modifier
                     .padding(6.dp)

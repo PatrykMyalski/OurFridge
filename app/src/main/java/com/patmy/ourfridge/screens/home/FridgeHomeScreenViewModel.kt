@@ -10,6 +10,9 @@ import com.patmy.ourfridge.model.MFHistory
 import com.patmy.ourfridge.model.MFoodInside
 import com.patmy.ourfridge.model.MFridge
 import com.patmy.ourfridge.model.MUser
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 class FridgeHomeScreenViewModel : ViewModel() {
 
@@ -25,9 +28,9 @@ class FridgeHomeScreenViewModel : ViewModel() {
                         val currentFridge = fridgeData.toObject<MFridge>()
                         onDone(currentUser, currentFridge)
                     }.addOnFailureListener {
-                    Log.d("FB",
-                        "Exception occurs when tries to get fridge data: $it")
-                }
+                        Log.d("FB",
+                            "Exception occurs when tries to get fridge data: $it")
+                    }
             } else {
                 val currentFridge = null
                 onDone(currentUser, currentFridge)
@@ -61,5 +64,38 @@ class FridgeHomeScreenViewModel : ViewModel() {
             Log.d("FB", "Exception occur when creating new fridge: $it")
         }
     }
+
+    fun addFoodToFridge(
+        newFood: MFoodInside,
+        currentUser: MUser?,
+        fridge: MFridge,
+        onFoodAdded: (MFridge) -> Unit,
+    ) {
+
+        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+        val currentDateTime = LocalDateTime.now().format(formatter)
+
+        newFood.idOfCreator = userUId
+        newFood.nameOfCreator = currentUser?.username
+        newFood.date = currentDateTime
+        newFood.id = UUID.randomUUID().toString()
+
+        if (fridge.foodInside[0]?.id == null) {
+            fridge.foodInside = listOf(newFood)
+        } else {
+            fridge.foodInside += newFood
+        }
+
+        db.collection("fridges").document(currentUser?.fridge.toString())
+            .update("foodInside", fridge.foodInside).addOnSuccessListener {
+            onFoodAdded(fridge)
+        }.addOnFailureListener {
+            Log.d("FB",
+                "Excepection occurs during adding food to fridge: $it")
+        }
+    }
 }
+
+
+
 
