@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.patmy.ourfridge.screens.fridge.FridgeScreen
+import com.patmy.ourfridge.screens.social.FridgeScreen
 import com.patmy.ourfridge.screens.home.FridgeHomeScreen
 import com.patmy.ourfridge.screens.login.LoginScreen
 import com.patmy.ourfridge.screens.registration.RegistrationScreen
@@ -15,7 +15,7 @@ fun OurFridgeNavigation() {
     val navController = rememberNavController()
     NavHost(navController = navController,
         startDestination = OurFridgeScreens.SplashScreen.name){
-        composable(OurFridgeScreens.FridgeScreen.name){
+        composable(OurFridgeScreens.SocialScreen.name){
             FridgeScreen(navController = navController)
         }
         composable(OurFridgeScreens.FridgeHomeScreen.name){

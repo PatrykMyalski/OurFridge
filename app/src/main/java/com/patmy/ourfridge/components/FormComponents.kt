@@ -137,12 +137,12 @@ fun UserForm(
                 Text(text = "Already have account?")
                 Text(text = " Sign In",
                     modifier = Modifier.clickable { navController.navigate(OurFridgeScreens.LoginScreen.name) },
-                    color = MaterialTheme.colors.secondary)
+                    color = MaterialTheme.colors.primaryVariant)
             } else {
                 Text(text = "Your first time using app?")
                 Text(text = " Sign Up",
                     modifier = Modifier.clickable { navController.navigate(OurFridgeScreens.RegistrationScreen.name) },
-                    color = MaterialTheme.colors.secondary)
+                    color = MaterialTheme.colors.primaryVariant)
             }
 
         }
@@ -168,11 +168,11 @@ fun SubmitButton(title: String, loading: Boolean, validInputs: Boolean, onClick:
         shape = CircleShape,
         colors = ButtonDefaults.buttonColors(
             backgroundColor = MaterialTheme.colors.primary,
-            contentColor = MaterialTheme.colors.secondary,
+            contentColor = MaterialTheme.colors.primaryVariant,
             disabledBackgroundColor = MaterialTheme.colors.primary,
             disabledContentColor = MaterialTheme.colors.background)) {
         if (loading) {
-            CircularProgressIndicator(modifier = Modifier, color = MaterialTheme.colors.secondary)
+            CircularProgressIndicator(modifier = Modifier, color = MaterialTheme.colors.primaryVariant)
         } else Text(text = title, modifier = Modifier, fontSize = 20.sp)
     }
 }

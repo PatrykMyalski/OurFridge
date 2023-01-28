@@ -49,7 +49,9 @@ class FridgeHomeScreenViewModel : ViewModel() {
         val emptyFridgeFoodArray = listOf<MFoodInside?>(MFoodInside())
         val userList = listOf(currentUser)
 
-        val newFridge = MFridge(userList, emptyFridgeFoodArray, emptyHistoryArray)
+        val fridgeId = userUId.substring(userUId.length - 6, userUId.length)
+
+        val newFridge = MFridge(fridgeId, userList, emptyFridgeFoodArray, emptyHistoryArray)
 
         db.collection("fridges").document(userUId).set(newFridge).addOnSuccessListener {
             db.collection("users").document(userUId).update("fridge", userUId)

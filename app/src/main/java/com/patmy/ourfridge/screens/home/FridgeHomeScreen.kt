@@ -95,7 +95,7 @@ fun FridgeHomeScreen(
         },
         backgroundColor = MaterialTheme.colors.background,
         bottomBar = {
-            OurFridgeAppBottomBar(navController)
+            OurFridgeAppBottomBar(navController, currentScreen = "home")
         }) {
         if (loadingData.value) {
             Column(modifier = Modifier.fillMaxSize(),
@@ -107,7 +107,7 @@ fun FridgeHomeScreen(
             HomeScreenView(data = fridge.value!!.foodInside, fridgeId = fridgeId.value,
                 loadingFridge = loadingFridge.value,
                 loadingInAddFoodForm = loadingInAddFoodForm.value,
-                onJoinFridge = { /*TODO*/ },
+                onJoinFridge = { navController.navigate(OurFridgeScreens.SocialScreen.name) },
                 onCreateFridge = {
                     loadingFridge.value = true
                     viewModel.createFridge(currentUser.value) { updateFridge, updateCurrentUser ->
@@ -155,7 +155,7 @@ fun HomeScreenView(
         horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = "What is in your fridge?",
             modifier = Modifier.padding(top = 10.dp),
-            fontSize = 20.sp, color = MaterialTheme.colors.secondary)
+            fontSize = 20.sp, color = MaterialTheme.colors.primaryVariant)
         Card(modifier = Modifier
             .width(340.dp)
             .height(500.dp)
@@ -214,7 +214,7 @@ fun HomeScreenView(
                     horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = "+Add food",
                         modifier = Modifier,
-                        color = MaterialTheme.colors.secondary,
+                        color = MaterialTheme.colors.primaryVariant,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold)
                 }
@@ -249,7 +249,7 @@ fun JoinOrCreateFridgeButtons(title: String, onClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = title,
                 modifier = Modifier.padding(horizontal = 20.dp),
-                color = MaterialTheme.colors.secondary,
+                color = MaterialTheme.colors.primaryVariant,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold)
         }
@@ -330,7 +330,7 @@ fun AddFoodMenu(
                                 focusedElevation = 8.dp),
                             colors = ButtonDefaults.buttonColors(
                                 backgroundColor = MaterialTheme.colors.primary,
-                                contentColor = MaterialTheme.colors.secondary),
+                                contentColor = MaterialTheme.colors.primaryVariant),
                             enabled = true) {
                             onClose()
                         }
@@ -344,7 +344,7 @@ fun AddFoodMenu(
                                 focusedElevation = 8.dp),
                             colors = ButtonDefaults.buttonColors(
                                 backgroundColor = MaterialTheme.colors.primary,
-                                contentColor = MaterialTheme.colors.secondary,
+                                contentColor = MaterialTheme.colors.primaryVariant,
                                 disabledBackgroundColor = MaterialTheme.colors.primary,
                                 disabledContentColor = MaterialTheme.colors.background),
                             enabled = foodTitleState.value.trim()
@@ -399,7 +399,7 @@ fun ShowFoodInfo(foodInfo: MutableState<MFoodInside?>, onClose: () -> Unit) {
                         horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = "Close",
                             modifier = Modifier,
-                            color = MaterialTheme.colors.secondary)
+                            color = MaterialTheme.colors.primaryVariant)
                     }
                 }
             }
