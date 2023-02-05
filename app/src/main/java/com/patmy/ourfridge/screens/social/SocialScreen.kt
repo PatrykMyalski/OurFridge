@@ -33,8 +33,6 @@ fun FridgeScreen(
     viewModel: SocialScreenViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
 ) {
 
-    // TODO Get data on Compose load
-
     val fridge = remember {
         mutableStateOf<MFridge?>(MFridge())
     }
@@ -59,6 +57,14 @@ fun FridgeScreen(
         mutableStateOf(false)
     }
 
+    if (currentUser.value == null){
+        viewModel.getData{ updateUser, updateFridge ->
+            currentUser.value = updateUser
+            fridge.value = updateFridge
+            loadingData.value = false
+        }
+    }
+
     Scaffold(scaffoldState = scaffoldState,
         topBar = {
             OurFridgeAppTopBar(onProfileClicked = {
@@ -77,23 +83,27 @@ fun FridgeScreen(
             OurFridgeAppBottomBar(navController, currentScreen = "social")
         }) {
 
-        SocialScreenView(currentUser = currentUser.value,
-            fridge = fridge.value,
-            joiningToFridgeLoading = joiningToFridgeLoading.value,
-            fridgeNotFound = throwInvalidFridgeId.value,
-            onJoinToFridge = { idInput ->
-                joiningToFridgeLoading.value = true
-                viewModel.joinFridge(idInput,
-                    joinedToFridge = { currentUserUpdate, fridgeUpdate ->
-                        currentUser.value = currentUserUpdate
-                        fridge.value = fridgeUpdate
-                        joiningToFridgeLoading.value = false
-                    }, fridgeNotFound = {
-                        throwInvalidFridgeId.value = true
-                        joiningToFridgeLoading.value = false
+        if (loadingData.value) {
+            CircularProgressIndicator()
+        } else {
+            SocialScreenView(currentUser = currentUser.value,
+                fridge = fridge.value,
+                joiningToFridgeLoading = joiningToFridgeLoading.value,
+                fridgeNotFound = throwInvalidFridgeId.value,
+                onJoinToFridge = { idInput ->
+                    joiningToFridgeLoading.value = true
+                    viewModel.joinFridge(idInput,
+                        joinedToFridge = { currentUserUpdate, fridgeUpdate ->
+                            currentUser.value = currentUserUpdate
+                            fridge.value = fridgeUpdate
+                            joiningToFridgeLoading.value = false
+                        }, fridgeNotFound = {
+                            throwInvalidFridgeId.value = true
+                            joiningToFridgeLoading.value = false
 
-                    })
-            })
+                        })
+                })
+        }
     }
 }
 

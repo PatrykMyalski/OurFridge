@@ -15,6 +15,25 @@ class SocialScreenViewModel : ViewModel() {
     private val userUId = Firebase.auth.currentUser?.uid.toString()
     private val db = Firebase.firestore
 
+    fun getData(onDone: (MUser?, MFridge?) -> Unit) {
+        db.collection("users").document(userUId).get().addOnSuccessListener { userData ->
+            val currentUser = userData.toObject<MUser>()
+            if (currentUser?.fridge !== null) {
+                db.collection("fridges").document(currentUser.fridge.toString()).get()
+                    .addOnSuccessListener { fridgeData ->
+                        val currentFridge = fridgeData.toObject<MFridge>()
+                        onDone(currentUser, currentFridge)
+                    }.addOnFailureListener {
+                        Log.d("FB",
+                            "Exception occurs when tries to get fridge data: $it")
+                    }
+            } else {
+                val currentFridge = null
+                onDone(currentUser, currentFridge)
+            }
+        }.addOnFailureListener { Log.d("FB", "Exception occurs when tries to get user data: $it") }
+    }
+
     fun joinFridge(fridgeId: String, joinedToFridge: (MUser?, MFridge?) -> Unit, fridgeNotFound: () -> Unit) {
 
         val fridgeRef = db.collection("fridges")

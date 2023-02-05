@@ -75,7 +75,7 @@ fun UserForm(
         val samePasswords = remember { mutableStateOf(true) }
 
         EmailInput(emailState = emailState, onAction = KeyboardActions {
-            userNameFocusRequest.requestFocus()
+            if (registration) userNameFocusRequest.requestFocus() else passwordFocusRequest.requestFocus()
         })
         if (registration) {
             InputField(modifier = Modifier.focusRequester(if (registration) userNameFocusRequest else passwordFocusRequest),

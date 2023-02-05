@@ -44,7 +44,11 @@ fun OurFridgeAppTopBar(onProfileClicked: () -> Unit = {}) {
 }
 
 @Composable
-fun OurFridgeAppBottomBar(navController: NavController, currentScreen: String? = null) {
+fun OurFridgeAppBottomBar(
+    navController: NavController,
+    currentScreen: String? = null,
+) {
+
     BottomAppBar(modifier = Modifier, backgroundColor = MaterialTheme.colors.primary) {
         Row(modifier = Modifier.fillMaxWidth()) {
             BottomAppBarIcon(modifier = Modifier.fillMaxWidth(0.5f),

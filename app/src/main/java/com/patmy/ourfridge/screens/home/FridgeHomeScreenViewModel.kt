@@ -90,11 +90,11 @@ class FridgeHomeScreenViewModel : ViewModel() {
 
         db.collection("fridges").document(currentUser?.fridge.toString())
             .update("foodInside", fridge.foodInside).addOnSuccessListener {
-            onFoodAdded(fridge)
-        }.addOnFailureListener {
-            Log.d("FB",
-                "Excepection occurs during adding food to fridge: $it")
-        }
+                onFoodAdded(fridge)
+            }.addOnFailureListener {
+                Log.d("FB",
+                    "Excepection occurs during adding food to fridge: $it")
+            }
     }
 }
 
