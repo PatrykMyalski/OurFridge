@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.patmy.ourfridge.data.UserAndFridgeData
 
 @Composable
 fun ProfileSideBar(onClick: () -> Unit) {
@@ -27,7 +28,10 @@ fun ProfileSideBar(onClick: () -> Unit) {
 
             Column(modifier = Modifier
                 .clickable(interactionSource = interactionSource,
-                    indication = null) { onClick.invoke() },
+                    indication = null) {
+                    onClick.invoke()
+                    UserAndFridgeData.clearData()
+                },
                 horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(text = "Logout",
                     modifier = Modifier.padding(10.dp),

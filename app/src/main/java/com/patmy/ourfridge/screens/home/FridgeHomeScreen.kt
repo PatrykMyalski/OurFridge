@@ -21,9 +21,8 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.components.*
+import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.model.MFoodInside
-import com.patmy.ourfridge.model.MFridge
-import com.patmy.ourfridge.model.MUser
 import com.patmy.ourfridge.navigation.OurFridgeScreens
 import kotlinx.coroutines.launch
 
@@ -34,24 +33,15 @@ fun FridgeHomeScreen(
 ) {
 
 
-    val fridgeId = remember {
-        mutableStateOf<String?>(null)
-    }
-
-    val fridge = remember {
-        mutableStateOf<MFridge?>(MFridge())
-    }
-
-    val currentUser = remember {
-        mutableStateOf<MUser?>(null)
-    }
-
     val scaffoldState = rememberScaffoldState()
 
     val scope = rememberCoroutineScope()
 
     val loadingData = remember {
         mutableStateOf(true)
+    }
+    val loggingOut = remember {
+        mutableStateOf(false)
     }
 
     val loadingInAddFoodForm = remember {
@@ -62,23 +52,24 @@ fun FridgeHomeScreen(
         mutableStateOf(false)
     }
 
-    if (currentUser.value == null) {
+    if (UserAndFridgeData.user == null && !loggingOut.value) {
         viewModel.getData { updateUser, updateFridge ->
             if (updateUser !== null) {
-                currentUser.value = updateUser
-                fridgeId.value = updateUser.fridge
+                UserAndFridgeData.setData(updateUser, updateFridge)
                 loadingData.value = false
             } else {
                 Log.d("FB", "ERROR: Cannot get user from firestore")
             }
             if (updateFridge !== null) {
-                fridge.value = updateFridge
                 loadingData.value = false
             } else {
                 loadingData.value = false
             }
         }
+    } else {
+        loadingData.value = false
     }
+
 
     Scaffold(scaffoldState = scaffoldState,
         topBar = {
@@ -88,7 +79,8 @@ fun FridgeHomeScreen(
         },
         drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
         drawerContent = {
-            ProfileSideBar() {
+            ProfileSideBar {
+                loggingOut.value = true
                 Firebase.auth.signOut()
                 navController.navigate(OurFridgeScreens.LoginScreen.name)
             }
@@ -104,25 +96,23 @@ fun FridgeHomeScreen(
                 CircularProgressIndicator(color = MaterialTheme.colors.secondary)
             }
         } else {
-            HomeScreenView(data = fridge.value!!.foodInside, fridgeId = fridgeId.value,
+            HomeScreenView(
                 loadingFridge = loadingFridge.value,
                 loadingInAddFoodForm = loadingInAddFoodForm.value,
                 onJoinFridge = { navController.navigate(OurFridgeScreens.SocialScreen.name) },
                 onCreateFridge = {
                     loadingFridge.value = true
-                    viewModel.createFridge(currentUser.value) { updateFridge, updateCurrentUser ->
-                        fridgeId.value = updateCurrentUser?.fridge
-                        currentUser.value = updateCurrentUser
-                        fridge.value = updateFridge
+                    viewModel.createFridge(UserAndFridgeData.user) { updateFridge, updateCurrentUser ->
+                        UserAndFridgeData.setData(updateCurrentUser, updateFridge)
                         loadingFridge.value = false
                     }
                 },
                 onAddFoodToFridge = {
                     loadingInAddFoodForm.value = true
                     viewModel.addFoodToFridge(it,
-                        currentUser.value,
-                        fridge.value!!) { updatedFridge ->
-                        fridge.value = updatedFridge
+                        UserAndFridgeData.user,
+                        UserAndFridgeData.fridge!!) { updatedFridge ->
+                        UserAndFridgeData.setData(updateFridge = updatedFridge)
                         loadingInAddFoodForm.value = false
                     }
                 }
@@ -134,8 +124,6 @@ fun FridgeHomeScreen(
 
 @Composable
 fun HomeScreenView(
-    data: List<MFoodInside?> = listOf(null),
-    fridgeId: String?,
     loadingFridge: Boolean,
     loadingInAddFoodForm: Boolean,
     onJoinFridge: () -> Unit,
@@ -168,21 +156,21 @@ fun HomeScreenView(
                 if (loadingFridge) {
                     CircularProgressIndicator(color = MaterialTheme.colors.primary)
                 } else {
-                    if (fridgeId == null || fridgeId == "null") {
+                    if (UserAndFridgeData.user?.fridge == null || UserAndFridgeData.user?.fridge == "null") {
                         Text(text = "Join or create fridge",
                             modifier = Modifier.padding(2.dp),
                             color = Color.Gray)
                     } else {
-                        if (data.isNullOrEmpty()) {
+                        if (UserAndFridgeData.fridge?.foodInside.isNullOrEmpty()) {
                             Text(text = "Add what you have in fridge...",
                                 modifier = Modifier.padding(2.dp),
                                 color = Color.Gray)
-                        } else if (data[0]?.title == null) {
+                        } else if (UserAndFridgeData.fridge?.foodInside!![0]?.title == null) {
                             Text(text = "Add what you have in fridge...",
                                 modifier = Modifier.padding(2.dp),
                                 color = Color.Gray)
                         } else {
-                            for (food in data) {
+                            for (food in UserAndFridgeData.fridge!!.foodInside) {
                                 FoodLabel(food) {
                                     showFoodInfo.value = true
                                     foodInfo.value = food
@@ -193,7 +181,7 @@ fun HomeScreenView(
                 }
             }
         }
-        if (fridgeId == null || fridgeId == "null") {
+        if (UserAndFridgeData.user?.fridge == null || UserAndFridgeData.user?.fridge == "null") {
             Row(modifier = Modifier.width(340.dp),
                 horizontalArrangement = Arrangement.SpaceBetween) {
                 JoinOrCreateFridgeButtons(title = "Join fridge") {

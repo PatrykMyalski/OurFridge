@@ -93,7 +93,7 @@ class FridgeHomeScreenViewModel : ViewModel() {
                 onFoodAdded(fridge)
             }.addOnFailureListener {
                 Log.d("FB",
-                    "Excepection occurs during adding food to fridge: $it")
+                    "Exception occurs during adding food to fridge: $it")
             }
     }
 }

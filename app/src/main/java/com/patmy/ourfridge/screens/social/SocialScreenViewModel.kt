@@ -54,8 +54,8 @@ class SocialScreenViewModel : ViewModel() {
                                 Log.d("FB", "Exception occurs when updating fridge users data: $it")
                             }
                         }.addOnFailureListener {
-                        Log.d("FB", "Exception occur when updating user data: $it ")
-                    }
+                            Log.d("FB", "Exception occur when updating user data: $it ")
+                        }
                 }.addOnFailureListener {
                     Log.d("FB", "Exception occurs when getting user data: $it")
                 }

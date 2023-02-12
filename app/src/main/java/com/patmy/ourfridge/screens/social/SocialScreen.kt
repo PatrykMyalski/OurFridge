@@ -22,6 +22,7 @@ import com.patmy.ourfridge.components.ErrorMessage
 import com.patmy.ourfridge.components.OurFridgeAppBottomBar
 import com.patmy.ourfridge.components.OurFridgeAppTopBar
 import com.patmy.ourfridge.components.ProfileSideBar
+import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.model.MFridge
 import com.patmy.ourfridge.model.MUser
 import com.patmy.ourfridge.navigation.OurFridgeScreens
@@ -33,13 +34,6 @@ fun FridgeScreen(
     viewModel: SocialScreenViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
 ) {
 
-    val fridge = remember {
-        mutableStateOf<MFridge?>(MFridge())
-    }
-
-    val currentUser = remember {
-        mutableStateOf<MUser?>(null)
-    }
 
     val scaffoldState = rememberScaffoldState()
 
@@ -47,6 +41,10 @@ fun FridgeScreen(
 
     val loadingData = remember {
         mutableStateOf(true)
+    }
+
+    val loggingOut = remember {
+        mutableStateOf(false)
     }
 
     val joiningToFridgeLoading = remember {
@@ -57,14 +55,6 @@ fun FridgeScreen(
         mutableStateOf(false)
     }
 
-    if (currentUser.value == null){
-        viewModel.getData{ updateUser, updateFridge ->
-            currentUser.value = updateUser
-            fridge.value = updateFridge
-            loadingData.value = false
-        }
-    }
-
     Scaffold(scaffoldState = scaffoldState,
         topBar = {
             OurFridgeAppTopBar(onProfileClicked = {
@@ -73,7 +63,8 @@ fun FridgeScreen(
         },
         drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
         drawerContent = {
-            ProfileSideBar() {
+            ProfileSideBar {
+                loggingOut.value = true
                 Firebase.auth.signOut()
                 navController.navigate(OurFridgeScreens.LoginScreen.name)
             }
@@ -86,16 +77,15 @@ fun FridgeScreen(
         if (loadingData.value) {
             CircularProgressIndicator()
         } else {
-            SocialScreenView(currentUser = currentUser.value,
-                fridge = fridge.value,
+            SocialScreenView(
+                fridge = UserAndFridgeData.fridge,
                 joiningToFridgeLoading = joiningToFridgeLoading.value,
                 fridgeNotFound = throwInvalidFridgeId.value,
                 onJoinToFridge = { idInput ->
                     joiningToFridgeLoading.value = true
                     viewModel.joinFridge(idInput,
                         joinedToFridge = { currentUserUpdate, fridgeUpdate ->
-                            currentUser.value = currentUserUpdate
-                            fridge.value = fridgeUpdate
+                            UserAndFridgeData.setData(currentUserUpdate, fridgeUpdate)
                             joiningToFridgeLoading.value = false
                         }, fridgeNotFound = {
                             throwInvalidFridgeId.value = true
@@ -109,7 +99,6 @@ fun FridgeScreen(
 
 @Composable
 fun SocialScreenView(
-    currentUser: MUser?,
     fridge: MFridge?,
     joiningToFridgeLoading: Boolean,
     fridgeNotFound: Boolean,
@@ -125,9 +114,20 @@ fun SocialScreenView(
             }
         }
     } else {
-        Text("Main Social Screen")
+        SocialMainView()
+        
     }
 
+}
+
+@Composable
+fun SocialMainView() {
+    
+    Box(modifier = Modifier.fillMaxSize()){
+        Column() {
+            //TODO
+        }
+    }
 }
 
 @Composable
@@ -167,7 +167,7 @@ fun JoinToFridgeComponent(fridgeNotFound: Boolean, onJoinToFridge: (String) -> U
                 backgroundColor = MaterialTheme.colors.primary,
                 focusedIndicatorColor = MaterialTheme.colors.secondary,
                 unfocusedIndicatorColor = MaterialTheme.colors.primary))
-        
+
         if (fridgeNotFound){
             ErrorMessage(text = "Unable to find fridge with that id!")
         }

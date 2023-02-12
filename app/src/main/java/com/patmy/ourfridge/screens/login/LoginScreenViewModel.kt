@@ -34,11 +34,9 @@ class LoginScreenViewModel : ViewModel() {
                             userNotFound()
                         }
                     }.addOnFailureListener {
-                        println(it)
                         changeLoadingValue(false)
                     }
             } catch (e: Exception) {
-                println("signIn error occur: ${e.message.toString()}")
                 changeLoadingValue(false)
             }
         }
