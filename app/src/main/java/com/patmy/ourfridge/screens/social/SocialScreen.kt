@@ -1,14 +1,22 @@
 package com.patmy.ourfridge.screens.social
 
+import android.content.Intent
+import android.widget.Toast
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -24,7 +32,6 @@ import com.patmy.ourfridge.components.OurFridgeAppTopBar
 import com.patmy.ourfridge.components.ProfileSideBar
 import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.model.MFridge
-import com.patmy.ourfridge.model.MUser
 import com.patmy.ourfridge.navigation.OurFridgeScreens
 import kotlinx.coroutines.launch
 
@@ -74,26 +81,24 @@ fun FridgeScreen(
             OurFridgeAppBottomBar(navController, currentScreen = "social")
         }) {
 
-        if (loadingData.value) {
-            CircularProgressIndicator()
-        } else {
-            SocialScreenView(
-                fridge = UserAndFridgeData.fridge,
-                joiningToFridgeLoading = joiningToFridgeLoading.value,
-                fridgeNotFound = throwInvalidFridgeId.value,
-                onJoinToFridge = { idInput ->
-                    joiningToFridgeLoading.value = true
-                    viewModel.joinFridge(idInput,
-                        joinedToFridge = { currentUserUpdate, fridgeUpdate ->
-                            UserAndFridgeData.setData(currentUserUpdate, fridgeUpdate)
-                            joiningToFridgeLoading.value = false
-                        }, fridgeNotFound = {
-                            throwInvalidFridgeId.value = true
-                            joiningToFridgeLoading.value = false
 
-                        })
-                })
-        }
+        SocialScreenView(
+            fridge = UserAndFridgeData.fridge,
+            joiningToFridgeLoading = joiningToFridgeLoading.value,
+            fridgeNotFound = throwInvalidFridgeId.value,
+            onJoinToFridge = { idInput ->
+                joiningToFridgeLoading.value = true
+                viewModel.joinFridge(idInput,
+                    joinedToFridge = { currentUserUpdate, fridgeUpdate ->
+                        UserAndFridgeData.setData(currentUserUpdate, fridgeUpdate)
+                        joiningToFridgeLoading.value = false
+                    }, fridgeNotFound = {
+                        throwInvalidFridgeId.value = true
+                        joiningToFridgeLoading.value = false
+
+                    })
+            })
+
     }
 }
 
@@ -105,28 +110,77 @@ fun SocialScreenView(
     onJoinToFridge: (String) -> Unit,
 ) {
     println(fridge?.id)
-    if (fridge?.id == null){
-        if (joiningToFridgeLoading){
+    if (fridge?.id == null) {
+        if (joiningToFridgeLoading) {
             CircularProgressIndicator()
-        } else{
+        } else {
             JoinToFridgeComponent(fridgeNotFound) {
                 onJoinToFridge(it)
             }
         }
     } else {
         SocialMainView()
-        
+
     }
 
 }
 
 @Composable
 fun SocialMainView() {
-    
-    Box(modifier = Modifier.fillMaxSize()){
-        Column() {
-            //TODO
+
+    val fridgeId = UserAndFridgeData.fridge?.id.toString()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = "Your fridge share code",
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 30.dp),
+                color = MaterialTheme.colors.primaryVariant)
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 5.dp),
+                horizontalArrangement = Arrangement.Center) {
+                TextField(value = fridgeId,
+                    onValueChange = {},
+                    modifier = Modifier,
+                    textStyle = TextStyle(textAlign = TextAlign.Center,
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.SemiBold),
+                    colors = TextFieldDefaults.textFieldColors(
+                        textColor = MaterialTheme.colors.secondary,
+                        backgroundColor = MaterialTheme.colors.primary,
+                        unfocusedIndicatorColor = MaterialTheme.colors.primary,
+                        focusedIndicatorColor = MaterialTheme.colors.primary
+                    ),
+                    readOnly = true,
+                    singleLine = true,
+                    leadingIcon = {
+                        val interactionSource = MutableInteractionSource()
+
+                        val sendIntent: Intent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_TEXT, fridgeId)
+                            type = "text/plain"
+                        }
+                        val shareIntent = Intent.createChooser(sendIntent, null)
+                        val context = LocalContext.current
+
+                        Icon(imageVector = Icons.Default.Share,
+                            contentDescription = "Share",
+                            modifier = Modifier.clickable(interactionSource = interactionSource,
+                                indication = null) {
+                                context.startActivity(shareIntent)
+                            },
+                            tint = MaterialTheme.colors.primaryVariant)
+                    })
+            }
+            Text(text = "Send this 6-digit code to people you want invite to fridge.",
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                color = MaterialTheme.colors.primaryVariant,
+                textAlign = TextAlign.Center)
         }
+
     }
 }
 
@@ -168,7 +222,7 @@ fun JoinToFridgeComponent(fridgeNotFound: Boolean, onJoinToFridge: (String) -> U
                 focusedIndicatorColor = MaterialTheme.colors.secondary,
                 unfocusedIndicatorColor = MaterialTheme.colors.primary))
 
-        if (fridgeNotFound){
+        if (fridgeNotFound) {
             ErrorMessage(text = "Unable to find fridge with that id!")
         }
 
