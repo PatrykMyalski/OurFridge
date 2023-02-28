@@ -44,6 +44,7 @@ class FridgeHomeScreenViewModel : ViewModel() {
     ) {
 
         currentUser?.fridge = userUId
+        currentUser?.role = "admin"
 
         val emptyHistoryArray = listOf<MFHistory?>(MFHistory())
         val emptyFridgeFoodArray = listOf<MFoodInside?>(MFoodInside())
@@ -54,7 +55,7 @@ class FridgeHomeScreenViewModel : ViewModel() {
         val newFridge = MFridge(fridgeId, userList, emptyFridgeFoodArray, emptyHistoryArray)
 
         db.collection("fridges").document(userUId).set(newFridge).addOnSuccessListener {
-            db.collection("users").document(userUId).update("fridge", userUId)
+            db.collection("users").document(userUId).update("fridge", userUId, "role", currentUser?.role)
                 .addOnSuccessListener {
                     onFridgeCreated(newFridge, currentUser)
                 }.addOnFailureListener {

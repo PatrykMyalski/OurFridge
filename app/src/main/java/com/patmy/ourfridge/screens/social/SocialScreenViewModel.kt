@@ -43,10 +43,11 @@ class SocialScreenViewModel : ViewModel() {
             if (fridge.isNotEmpty()) {
                 db.collection("users").document(userUId).get().addOnSuccessListener { userData ->
                     val currentUser = userData.toObject<MUser>()
+                    currentUser?.role = "user"
                     val fridgeUsersToUpdate = fridge[0].fridgeUsers + currentUser    // adding user to list of fridge users
                     val fridgeUId = fridge[0].fridgeUsers[0]?.fridge.toString()     // getting fridge id from fridge creator
                     currentUser?.fridge = fridgeUId
-                    db.collection("users").document(userUId).update("fridge", fridgeUId)
+                    db.collection("users").document(userUId).update("fridge", fridgeUId, "role", currentUser?.role)
                         .addOnSuccessListener {
                             fridgeRef.document(fridgeUId).update("fridgeUsers", fridgeUsersToUpdate).addOnSuccessListener {
                                 joinedToFridge(currentUser, fridge[0])
