@@ -89,35 +89,38 @@ fun FridgeHomeScreen(
         bottomBar = {
             OurFridgeAppBottomBar(navController, currentScreen = "home")
         }) {
-        if (loadingData.value) {
-            Column(modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center) {
-                CircularProgressIndicator(color = MaterialTheme.colors.secondary)
-            }
-        } else {
-            HomeScreenView(
-                loadingFridge = loadingFridge.value,
-                loadingInAddFoodForm = loadingInAddFoodForm.value,
-                onJoinFridge = { navController.navigate(OurFridgeScreens.SocialScreen.name) },
-                onCreateFridge = {
-                    loadingFridge.value = true
-                    viewModel.createFridge(UserAndFridgeData.user) { updateFridge, updateCurrentUser ->
-                        UserAndFridgeData.setData(updateCurrentUser, updateFridge)
-                        loadingFridge.value = false
-                    }
-                },
-                onAddFoodToFridge = {
-                    loadingInAddFoodForm.value = true
-                    viewModel.addFoodToFridge(it,
-                        UserAndFridgeData.user,
-                        UserAndFridgeData.fridge!!) { updatedFridge ->
-                        UserAndFridgeData.setData(updateFridge = updatedFridge)
-                        loadingInAddFoodForm.value = false
-                    }
+        Box(modifier = Modifier.padding(it)){
+            if (loadingData.value) {
+                Column(modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center) {
+                    CircularProgressIndicator(color = MaterialTheme.colors.secondary)
                 }
-            )
+            } else {
+                HomeScreenView(
+                    loadingFridge = loadingFridge.value,
+                    loadingInAddFoodForm = loadingInAddFoodForm.value,
+                    onJoinFridge = { navController.navigate(OurFridgeScreens.SocialScreen.name) },
+                    onCreateFridge = {
+                        loadingFridge.value = true
+                        viewModel.createFridge(UserAndFridgeData.user) { updateFridge, updateCurrentUser ->
+                            UserAndFridgeData.setData(updateCurrentUser, updateFridge)
+                            loadingFridge.value = false
+                        }
+                    },
+                    onAddFoodToFridge = {
+                        loadingInAddFoodForm.value = true
+                        viewModel.addFoodToFridge(it,
+                            UserAndFridgeData.user,
+                            UserAndFridgeData.fridge!!) { updatedFridge ->
+                            UserAndFridgeData.setData(updateFridge = updatedFridge)
+                            loadingInAddFoodForm.value = false
+                        }
+                    }
+                )
+            }
         }
+
     }
 }
 

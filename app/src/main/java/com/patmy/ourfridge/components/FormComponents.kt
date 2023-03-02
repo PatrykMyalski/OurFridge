@@ -44,7 +44,7 @@ fun UserForm(
 ) {
 
     val modifier = Modifier
-        .padding(top = 30.dp)
+        .padding(top = 15.dp)
         .fillMaxWidth()
         .height(200.dp)
         .verticalScroll(rememberScrollState())

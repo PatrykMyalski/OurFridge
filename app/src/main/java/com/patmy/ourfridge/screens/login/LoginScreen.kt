@@ -1,6 +1,7 @@
 package com.patmy.ourfridge.screens.login
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
@@ -27,7 +28,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginScreenViewModel = 
     }
 
     Scaffold(topBar = { OurFridgeAppTopBar() }) {
-        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
+        Surface(modifier = Modifier.fillMaxSize().padding(it), color = MaterialTheme.colors.background) {
             UserForm(navController,
                 userNotFound = userNotFound.value,
                 loading = loadingValue.value) { email: String, password: String, username: String ->

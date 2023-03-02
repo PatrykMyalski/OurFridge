@@ -1,5 +1,6 @@
 package com.patmy.ourfridge.screens.social
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -39,6 +40,7 @@ import com.patmy.ourfridge.model.MFridge
 import com.patmy.ourfridge.model.MUser
 import com.patmy.ourfridge.navigation.OurFridgeScreens
 import kotlinx.coroutines.launch
+
 
 @Composable
 fun FridgeScreen(
@@ -86,7 +88,7 @@ fun FridgeScreen(
             OurFridgeAppBottomBar(navController, currentScreen = "social")
         }) {
 
-
+        Box(modifier = Modifier.padding(it))
         SocialScreenView(
             fridge = UserAndFridgeData.fridge,
             joiningToFridgeLoading = joiningToFridgeLoading.value,
@@ -140,7 +142,7 @@ fun SocialMainView() {
             horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = "Your fridge share code",
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 30.dp),
+                modifier = Modifier.padding(top = 15.dp),
                 color = MaterialTheme.colors.primaryVariant)
             Row(modifier = Modifier
                 .fillMaxWidth()
@@ -248,7 +250,7 @@ fun JoinToFridgeComponent(fridgeNotFound: Boolean, onJoinToFridge: (String) -> U
     }
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = "Pass here 6-digit code which you will get from users you want to join",
-            modifier = Modifier.padding(top = 100.dp, bottom = 30.dp, start = 30.dp, end = 30.dp),
+            modifier = Modifier.padding(top = 15.dp, bottom = 30.dp, start = 30.dp, end = 30.dp),
             textAlign = TextAlign.Center,
             color = MaterialTheme.colors.primaryVariant,
             overflow = TextOverflow.Ellipsis)
