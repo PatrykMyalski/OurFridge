@@ -1,15 +1,17 @@
 package com.patmy.ourfridge.screens.social
 
 import android.content.Intent
-import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -17,6 +19,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -26,12 +29,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.patmy.ourfridge.R
 import com.patmy.ourfridge.components.ErrorMessage
 import com.patmy.ourfridge.components.OurFridgeAppBottomBar
 import com.patmy.ourfridge.components.OurFridgeAppTopBar
 import com.patmy.ourfridge.components.ProfileSideBar
 import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.model.MFridge
+import com.patmy.ourfridge.model.MUser
 import com.patmy.ourfridge.navigation.OurFridgeScreens
 import kotlinx.coroutines.launch
 
@@ -179,9 +184,55 @@ fun SocialMainView() {
                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                 color = MaterialTheme.colors.primaryVariant,
                 textAlign = TextAlign.Center)
+            println(UserAndFridgeData.user?.fridge)
+            if (UserAndFridgeData.user?.fridge !== null) {
+                UsersList()
+            }
         }
 
     }
+}
+
+@Composable
+fun UsersList() {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(top = 10.dp, start = 5.dp, end = 5.dp, bottom = 65.dp)
+        .verticalScroll(rememberScrollState())) {
+        for (user in UserAndFridgeData.fridge?.fridgeUsers!!) {
+            UserLabel(user)
+        }
+
+    }
+}
+
+@Composable
+fun UserLabel(user: MUser?) {
+
+    Card(modifier = Modifier
+        .fillMaxWidth()
+        .padding(5.dp),
+        backgroundColor = MaterialTheme.colors.background,
+        shape = RoundedCornerShape(5.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colors.primary)) {
+        Row(modifier = Modifier
+            .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically) {
+            Icon(painter = painterResource(id = R.drawable.user_icon),
+                contentDescription = "User",
+                tint = MaterialTheme.colors.primaryVariant)
+            Text(text = user?.username.toString(),
+                style = TextStyle(color = MaterialTheme.colors.primaryVariant, fontSize = 24.sp))
+            Icon(painter = painterResource(id = R.drawable.history_icon),
+                contentDescription = "View history",
+                modifier = Modifier, tint = MaterialTheme.colors.primaryVariant)
+        }
+
+
+    }
+
+
 }
 
 @Composable
