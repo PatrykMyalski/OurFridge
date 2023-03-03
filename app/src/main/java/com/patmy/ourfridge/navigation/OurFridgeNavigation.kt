@@ -4,10 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.patmy.ourfridge.screens.social.FridgeScreen
 import com.patmy.ourfridge.screens.home.FridgeHomeScreen
 import com.patmy.ourfridge.screens.login.LoginScreen
 import com.patmy.ourfridge.screens.registration.RegistrationScreen
+import com.patmy.ourfridge.screens.social.SocialScreen
 import com.patmy.ourfridge.screens.splash.SplashScreen
 
 @Composable
@@ -16,7 +16,7 @@ fun OurFridgeNavigation() {
     NavHost(navController = navController,
         startDestination = OurFridgeScreens.SplashScreen.name){
         composable(OurFridgeScreens.SocialScreen.name){
-            FridgeScreen(navController = navController)
+            SocialScreen(navController = navController)
         }
         composable(OurFridgeScreens.FridgeHomeScreen.name){
             FridgeHomeScreen(navController = navController)

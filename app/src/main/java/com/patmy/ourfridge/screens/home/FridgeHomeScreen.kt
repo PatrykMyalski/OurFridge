@@ -397,13 +397,3 @@ fun ShowFoodInfo(foodInfo: MutableState<MFoodInside?>, onClose: () -> Unit) {
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
