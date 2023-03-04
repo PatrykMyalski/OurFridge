@@ -7,6 +7,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.firestore.ktx.toObjects
 import com.google.firebase.ktx.Firebase
+import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.model.MFridge
 import com.patmy.ourfridge.model.MUser
 
@@ -24,8 +25,10 @@ class SocialScreenViewModel : ViewModel() {
                         val currentFridge = fridgeData.toObject<MFridge>()
                         onDone(currentUser, currentFridge)
                     }.addOnFailureListener {
-                        Log.d("FB",
-                            "Exception occurs when tries to get fridge data: $it")
+                        Log.d(
+                            "FB",
+                            "Exception occurs when tries to get fridge data: $it"
+                        )
                     }
             } else {
                 val currentFridge = null
@@ -34,7 +37,31 @@ class SocialScreenViewModel : ViewModel() {
         }.addOnFailureListener { Log.d("FB", "Exception occurs when tries to get user data: $it") }
     }
 
-    fun joinFridge(fridgeId: String, joinedToFridge: (MUser?, MFridge?) -> Unit, fridgeNotFound: () -> Unit) {
+    fun changeRole(user: MUser?, onDone: () -> Unit) {
+
+        val userRoleToChange = if (user?.role == "user") "child" else "user"
+
+        val index = UserAndFridgeData.fridge?.fridgeUsers?.indexOf(user)
+        UserAndFridgeData.fridge?.fridgeUsers?.get(index!!)?.role = userRoleToChange
+
+
+        db.collection("users").whereEqualTo("email", user?.email).get().addOnSuccessListener {
+            if (!it.isEmpty) {
+                it.documents[0].reference.update("role", userRoleToChange).addOnSuccessListener {
+                    db.collection("fridges").document(userUId).update("fridgeUsers", UserAndFridgeData.fridge?.fridgeUsers).addOnSuccessListener {
+                            onDone()
+                    }
+                }
+            }
+        }
+    }
+
+
+    fun joinFridge(
+        fridgeId: String,
+        joinedToFridge: (MUser?, MFridge?) -> Unit,
+        fridgeNotFound: () -> Unit,
+    ) {
 
         val fridgeRef = db.collection("fridges")
         fridgeRef.whereEqualTo("id", fridgeId).get().addOnSuccessListener { fridgeArr ->
@@ -44,16 +71,23 @@ class SocialScreenViewModel : ViewModel() {
                 db.collection("users").document(userUId).get().addOnSuccessListener { userData ->
                     val currentUser = userData.toObject<MUser>()
                     currentUser?.role = "user"
-                    val fridgeUsersToUpdate = fridge[0].fridgeUsers + currentUser    // adding user to list of fridge users
-                    val fridgeUId = fridge[0].fridgeUsers[0]?.fridge.toString()     // getting fridge id from fridge creator
+                    val fridgeUsersToUpdate =
+                        fridge[0].fridgeUsers + currentUser    // adding user to list of fridge users
+                    val fridgeUId =
+                        fridge[0].fridgeUsers[0]?.fridge.toString()     // getting fridge id from fridge creator
                     currentUser?.fridge = fridgeUId
-                    db.collection("users").document(userUId).update("fridge", fridgeUId, "role", currentUser?.role)
+                    db.collection("users").document(userUId)
+                        .update("fridge", fridgeUId, "role", currentUser?.role)
                         .addOnSuccessListener {
-                            fridgeRef.document(fridgeUId).update("fridgeUsers", fridgeUsersToUpdate).addOnSuccessListener {
-                                joinedToFridge(currentUser, fridge[0])
-                            }.addOnFailureListener {
-                                Log.d("FB", "Exception occurs when updating fridge users data: $it")
-                            }
+                            fridgeRef.document(fridgeUId).update("fridgeUsers", fridgeUsersToUpdate)
+                                .addOnSuccessListener {
+                                    joinedToFridge(currentUser, fridge[0])
+                                }.addOnFailureListener {
+                                    Log.d(
+                                        "FB",
+                                        "Exception occurs when updating fridge users data: $it"
+                                    )
+                                }
                         }.addOnFailureListener {
                             Log.d("FB", "Exception occur when updating user data: $it ")
                         }

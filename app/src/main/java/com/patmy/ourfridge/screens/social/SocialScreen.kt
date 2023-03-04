@@ -1,21 +1,14 @@
 package com.patmy.ourfridge.screens.social
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,9 +48,6 @@ fun SocialScreen(
 
     val scope = rememberCoroutineScope()
 
-    val loadingData = remember {
-        mutableStateOf(true)
-    }
 
     val loggingOut = remember {
         mutableStateOf(false)
@@ -76,6 +66,9 @@ fun SocialScreen(
     }
     val userRoleToChange = remember {
         mutableStateOf<MUser?>(null)
+    }
+    val loadingRoleChange: MutableState<Boolean> = remember {
+        mutableStateOf(false)
     }
 
     Scaffold(scaffoldState = scaffoldState,
@@ -101,6 +94,7 @@ fun SocialScreen(
         SocialScreenView(
             fridge = UserAndFridgeData.fridge,
             joiningToFridgeLoading = joiningToFridgeLoading.value,
+            roleChangeLoading = loadingRoleChange.value,
             fridgeNotFound = throwInvalidFridgeId.value,
             onJoinToFridge = { idInput ->
                 joiningToFridgeLoading.value = true
@@ -112,23 +106,28 @@ fun SocialScreen(
                         throwInvalidFridgeId.value = true
                         joiningToFridgeLoading.value = false
                     })
-            }, changeUserRole = {
-                userRoleToChange.value = it
+            }, changeUserRole = { user ->
+                userRoleToChange.value = user
                 confirmUserRoleChangePopUp.value = true
             })
-        if (confirmUserRoleChangePopUp.value) {
-            ConfirmPopUp(userRoleToChange.value, onConfirm = {
-                //TODO Change user role
-                confirmUserRoleChangePopUp.value = false
-            }, onClose = {confirmUserRoleChangePopUp.value = false})
+    }
 
-        }
+    if (confirmUserRoleChangePopUp.value) {
+        ConfirmPopUp(userRoleToChange.value, onConfirm = {
+            loadingRoleChange.value = true
+            viewModel.changeRole(userRoleToChange.value) {
+                loadingRoleChange.value = false
+
+            }
+            confirmUserRoleChangePopUp.value = false
+        }, onClose = { confirmUserRoleChangePopUp.value = false })
+
     }
 }
 
 
 @Composable
-fun ConfirmPopUp(user: MUser?, onConfirm: () -> Unit, onClose: () -> Unit){
+fun ConfirmPopUp(user: MUser?, onConfirm: () -> Unit, onClose: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -145,9 +144,14 @@ fun ConfirmPopUp(user: MUser?, onConfirm: () -> Unit, onClose: () -> Unit){
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "Are you sure you want to change role of ${user?.username}? User now " +
-                        "${if (user?.role == "user") "won't" else "will" } be able to add food to fridge",
-                    modifier = Modifier.padding(vertical = 10.dp, horizontal = 5.dp), overflow = TextOverflow.Clip, textAlign = TextAlign.Center, color = MaterialTheme.colors.primaryVariant)
+                Text(
+                    text = "Are you sure you want to change role of ${user?.username}? User now " +
+                            "${if (user?.role == "user") "won't" else "will"} be able to add food to fridge",
+                    modifier = Modifier.padding(vertical = 10.dp, horizontal = 5.dp),
+                    overflow = TextOverflow.Clip,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colors.primaryVariant
+                )
                 Button(onClick = { onConfirm() }) {
                     Text(text = "Confirm", color = MaterialTheme.colors.primaryVariant)
                 }
@@ -160,12 +164,12 @@ fun ConfirmPopUp(user: MUser?, onConfirm: () -> Unit, onClose: () -> Unit){
 @Composable
 fun SocialScreenView(
     fridge: MFridge?,
+    roleChangeLoading: Boolean,
     joiningToFridgeLoading: Boolean,
     fridgeNotFound: Boolean,
     onJoinToFridge: (String) -> Unit,
     changeUserRole: (MUser?) -> Unit,
 ) {
-    println(fridge?.id)
     if (fridge?.id == null) {
         if (joiningToFridgeLoading) {
             CircularProgressIndicator()
@@ -175,14 +179,14 @@ fun SocialScreenView(
             }
         }
     } else {
-        SocialMainView() {
+        SocialMainView(roleChangeLoading) {
             changeUserRole(it)
         }
     }
 }
 
 @Composable
-fun SocialMainView(changeUserRole: (MUser?) -> Unit) {
+fun SocialMainView(roleChangeLoading: Boolean, changeUserRole: (MUser?) -> Unit) {
 
     val fridgeId = UserAndFridgeData.fridge?.id.toString()
 
@@ -256,18 +260,25 @@ fun SocialMainView(changeUserRole: (MUser?) -> Unit) {
             if (!usersList.contains(UserAndFridgeData.user)) {
                 usersList += UserAndFridgeData.user
             }
+
             if (UserAndFridgeData.user?.fridge !== null) {
-                UsersList(usersList) {
+                UsersList(usersList, roleChangeLoading) {
                     changeUserRole(it)
                 }
             }
         }
-
     }
 }
 
+
 @Composable
-fun UsersList(usersList: List<MUser?>, changeUserRole: (MUser?) -> Unit) {
+fun UsersList(
+    usersList: List<MUser?>,
+    roleChangeLoading: Boolean,
+    changeUserRole: (MUser?) -> Unit,
+) {
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -279,7 +290,7 @@ fun UsersList(usersList: List<MUser?>, changeUserRole: (MUser?) -> Unit) {
                 if (user?.role == "admin") {
                     UserLabel(user)
                 } else {
-                    UserLabelAdmin(user) {
+                    UserLabelAdmin(user, roleChangeLoading) {
                         changeUserRole(it)
                     }
                 }
@@ -292,13 +303,21 @@ fun UsersList(usersList: List<MUser?>, changeUserRole: (MUser?) -> Unit) {
 }
 
 @Composable
-fun UserLabelAdmin(user: MUser?, changeUserRole: (MUser?) -> Unit) {
+fun UserLabelAdmin(
+    user: MUser?,
+    roleChangeLoading: Boolean = false,
+    changeUserRole: (MUser?) -> Unit,
+) {
     val interactionSource = remember {
         MutableInteractionSource()
     }
 
     val expanded = remember {
         mutableStateOf(false)
+    }
+
+    val userRoleToChange: MutableState<MUser?> = remember {
+        mutableStateOf(null)
     }
 
     Card(
@@ -316,6 +335,7 @@ fun UserLabelAdmin(user: MUser?, changeUserRole: (MUser?) -> Unit) {
         ) {
             Column {
 
+                userRoleToChange.value = null
                 Icon(
                     painter = painterResource(id = (if (user?.role == "user") R.drawable.user_icon else if (user?.role == "admin") R.drawable.admin_icon else R.drawable.children_icon)),
                     contentDescription = "User_role",
@@ -335,6 +355,7 @@ fun UserLabelAdmin(user: MUser?, changeUserRole: (MUser?) -> Unit) {
                     onDismissRequest = { expanded.value = false }) {
                     Column(verticalArrangement = Arrangement.Center) {
                         DropdownMenuItem(onClick = {
+                            userRoleToChange.value = user
                             changeUserRole(user)
                             expanded.value = false
                         }) {
@@ -358,31 +379,36 @@ fun UserLabelAdmin(user: MUser?, changeUserRole: (MUser?) -> Unit) {
                     }
                 }
             }
-
-            Text(
-                text = user?.username.toString(),
-                style = TextStyle(color = MaterialTheme.colors.primaryVariant, fontSize = 24.sp)
-            )
-            Icon(
-                painter = painterResource(id = R.drawable.history_icon),
-                contentDescription = "View history",
-                modifier = Modifier.clickable(
-                    interactionSource,
-                    indication = null,
-                    onClick = {
-                        // TODO history clicked
-                    }), tint = MaterialTheme.colors.primaryVariant
-            )
+            UsernameAndHistoryIcon(user)
         }
     }
 }
 
 @Composable
-fun UserLabel(user: MUser?) {
+fun UsernameAndHistoryIcon(user: MUser?) {
 
     val interactionSource = remember {
         MutableInteractionSource()
     }
+
+    Text(
+        text = user?.username.toString(),
+        style = TextStyle(color = MaterialTheme.colors.primaryVariant, fontSize = 24.sp)
+    )
+    Icon(
+        painter = painterResource(id = R.drawable.history_icon),
+        contentDescription = "View history",
+        modifier = Modifier.clickable(
+            interactionSource,
+            indication = null,
+            onClick = {
+                // TODO history clicked
+            }), tint = MaterialTheme.colors.primaryVariant
+    )
+}
+
+@Composable
+fun UserLabel(user: MUser?) {
 
     val userRoleIcon =
         if (user?.role == "user") R.drawable.user_icon else if (user?.role == "admin") R.drawable.admin_icon else R.drawable.children_icon
@@ -407,20 +433,7 @@ fun UserLabel(user: MUser?) {
                 modifier = Modifier,
                 tint = MaterialTheme.colors.primaryVariant
             )
-            Text(
-                text = user?.username.toString(),
-                style = TextStyle(color = MaterialTheme.colors.primaryVariant, fontSize = 24.sp)
-            )
-            Icon(
-                painter = painterResource(id = R.drawable.history_icon),
-                contentDescription = "View history",
-                modifier = Modifier.clickable(
-                    interactionSource,
-                    indication = null,
-                    onClick = {
-                        //TODO History click
-                    }), tint = MaterialTheme.colors.primaryVariant
-            )
+            UsernameAndHistoryIcon(user)
         }
     }
 }
