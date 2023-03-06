@@ -1,5 +1,6 @@
 package com.patmy.ourfridge.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,6 +9,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -16,7 +18,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.patmy.ourfridge.model.MFoodInside
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
+import com.patmy.ourfridge.model.MFood
 
 
 @Composable
@@ -62,7 +66,7 @@ fun InputField(
 }
 
 @Composable
-fun FoodLabel(food: MFoodInside?, onClick: () -> Unit) {
+fun FoodLabel(food: MFood?, onClick: () -> Unit) {
     Column(modifier = Modifier.padding(4.dp)) {
         Row(modifier = Modifier
             .fillMaxWidth()
@@ -93,5 +97,29 @@ fun AddFoodMenuButtons(
         colors = colors,
         enabled = enabled) {
         Text(text = title)
+    }
+}
+
+@Composable
+fun PopUpTemplate(onClose: () -> Unit, content: @Composable () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0x67000000))
+    ) {
+        Popup(
+            alignment = Alignment.Center,
+            properties = PopupProperties(),
+            onDismissRequest = { onClose() }) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .background(MaterialTheme.colors.background, RoundedCornerShape(20)),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                content()
+            }
+        }
     }
 }

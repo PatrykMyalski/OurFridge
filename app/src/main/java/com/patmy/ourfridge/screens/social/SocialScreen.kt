@@ -11,7 +11,6 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -20,16 +19,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
 import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.R
-import com.patmy.ourfridge.components.ErrorMessage
-import com.patmy.ourfridge.components.OurFridgeAppBottomBar
-import com.patmy.ourfridge.components.OurFridgeAppTopBar
-import com.patmy.ourfridge.components.ProfileSideBar
+import com.patmy.ourfridge.components.*
 import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.model.MFridge
 import com.patmy.ourfridge.model.MUser
@@ -70,6 +64,13 @@ fun SocialScreen(
     val loadingRoleChange: MutableState<Boolean> = remember {
         mutableStateOf(false)
     }
+    val viewUserHistory = remember {
+        mutableStateOf(false)
+    }
+    val userHistoryToView = remember {
+        mutableStateOf<MUser?>(null)
+    }
+
 
     Scaffold(scaffoldState = scaffoldState,
         topBar = {
@@ -121,45 +122,41 @@ fun SocialScreen(
             }
             confirmUserRoleChangePopUp.value = false
         }, onClose = { confirmUserRoleChangePopUp.value = false })
-
     }
-}
 
-
-@Composable
-fun ConfirmPopUp(user: MUser?, onConfirm: () -> Unit, onClose: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0x67000000))
-    ) {
-        Popup(
-            alignment = Alignment.Center,
-            properties = PopupProperties(),
-            onDismissRequest = { onClose() }) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .background(MaterialTheme.colors.background, RoundedCornerShape(20)),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Are you sure you want to change role of ${user?.username}? User now " +
-                            "${if (user?.role == "user") "won't" else "will"} be able to add food to fridge",
-                    modifier = Modifier.padding(vertical = 10.dp, horizontal = 5.dp),
-                    overflow = TextOverflow.Clip,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colors.primaryVariant
-                )
-                Button(onClick = { onConfirm() }) {
-                    Text(text = "Confirm", color = MaterialTheme.colors.primaryVariant)
-                }
-            }
-
+    if (viewUserHistory.value) {
+        ViewUserHistory(user = userHistoryToView.value) {
+            viewUserHistory.value = false
+            userHistoryToView.value = null
         }
     }
 }
+
+@Composable
+fun ViewUserHistory(user: MUser?, onClose: () -> Unit){
+    PopUpTemplate(onClose) {
+        //TODO after you create creating history events on:
+        // adding food, deleting food, added quantity, deleted quantity
+    }
+}
+
+@Composable
+fun ConfirmPopUp(user: MUser?, onConfirm: () -> Unit, onClose: () -> Unit) {
+    PopUpTemplate(onClose) {
+        Text(
+            text = "Are you sure you want to change role of ${user?.username}? User now " +
+                    "${if (user?.role == "user") "won't" else "will"} be able to add food to fridge",
+            modifier = Modifier.padding(vertical = 10.dp, horizontal = 5.dp),
+            overflow = TextOverflow.Clip,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colors.primaryVariant
+        )
+        Button(onClick = { onConfirm() }) {
+            Text(text = "Confirm", color = MaterialTheme.colors.primaryVariant)
+        }
+    }
+}
+
 
 @Composable
 fun SocialScreenView(

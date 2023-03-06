@@ -7,7 +7,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.model.MFHistory
-import com.patmy.ourfridge.model.MFoodInside
+import com.patmy.ourfridge.model.MFood
 import com.patmy.ourfridge.model.MFridge
 import com.patmy.ourfridge.model.MUser
 import java.time.LocalDateTime
@@ -47,7 +47,7 @@ class FridgeHomeScreenViewModel : ViewModel() {
         currentUser?.role = "admin"
 
         val emptyHistoryArray = listOf<MFHistory?>(MFHistory())
-        val emptyFridgeFoodArray = listOf<MFoodInside?>(MFoodInside())
+        val emptyFridgeFoodArray = listOf<MFood?>(MFood())
         val userList = listOf(currentUser)
 
         val fridgeId = userUId.substring(userUId.length - 6, userUId.length)
@@ -69,7 +69,7 @@ class FridgeHomeScreenViewModel : ViewModel() {
     }
 
     fun addFoodToFridge(
-        newFood: MFoodInside,
+        newFood: MFood,
         currentUser: MUser?,
         fridge: MFridge,
         onFoodAdded: (MFridge) -> Unit,

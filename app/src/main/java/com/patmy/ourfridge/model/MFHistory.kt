@@ -1,9 +1,11 @@
 package com.patmy.ourfridge.model
 
 data class MFHistory(
-    var historyId: String? = "",
-    var foodId: String? = "",
-    var fridgeId: String? = "",
-    var creatorId: String? = "",
-    var event: String? = "",
+    var historyId: String? = null,
+    var foodId: String? = null,
+    var foodItem: MFood? = null,
+    var fridgeId: String? = null,
+    var creatorId: String? = null,
+    var event: String? = null,
 )
+
