@@ -2,6 +2,7 @@ package com.patmy.ourfridge.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -16,6 +17,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
@@ -120,6 +122,49 @@ fun PopUpTemplate(onClose: () -> Unit, content: @Composable () -> Unit) {
             ) {
                 content()
             }
+        }
+    }
+}
+
+@Composable
+fun PopUpWithTextField(onClose: () -> Unit, content: @Composable () -> Unit) {
+
+    val interactionSource = MutableInteractionSource()
+
+    Card(
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable(interactionSource = interactionSource, indication = null) {
+                onClose()
+            }, backgroundColor = Color(0x67000000)
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Card(
+                modifier = Modifier
+                    .padding(start = 30.dp, end = 30.dp, top = 100.dp)
+                    .clickable(interactionSource = interactionSource, indication = null) {
+                    },
+                backgroundColor = MaterialTheme.colors.background,
+                shape = RoundedCornerShape(10),
+                elevation = 5.dp
+            ) {
+                content()
+            }
+        }
+    }
+}
+
+@Composable
+fun ConfirmPopUp(text: String, onConfirm: () -> Unit, onClose: () -> Unit) {
+    PopUpTemplate(onClose) {
+        Text(text = text,
+            modifier = Modifier.padding(vertical = 10.dp, horizontal = 5.dp),
+            overflow = TextOverflow.Clip,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colors.primaryVariant
+        )
+        Button(onClick = { onConfirm() }) {
+            Text(text = "Confirm", color = MaterialTheme.colors.primaryVariant)
         }
     }
 }

@@ -74,7 +74,7 @@ class FridgeHomeScreenViewModel : ViewModel() {
         fridge: MFridge,
         onFoodAdded: (MFridge) -> Unit,
     ) {
-
+        //TODO adding event on user events and fridge events
         val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
         val currentDateTime = LocalDateTime.now().format(formatter)
 
@@ -97,7 +97,14 @@ class FridgeHomeScreenViewModel : ViewModel() {
                     "Exception occurs during adding food to fridge: $it")
             }
     }
+
+    fun deleteFood(food: MFood?){
+        //TODO
+
+    }
+
 }
+
 
 
 

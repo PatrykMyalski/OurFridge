@@ -114,7 +114,8 @@ fun SocialScreen(
     }
 
     if (confirmUserRoleChangePopUp.value) {
-        ConfirmPopUp(userRoleToChange.value, onConfirm = {
+        ConfirmPopUp("Are you sure you want to change role of ${userRoleToChange.value?.username}? User now " +
+                "${if (userRoleToChange.value?.role == "user") "won't" else "will"} be able to add food to fridge", onConfirm = {
             loadingRoleChange.value = true
             viewModel.changeRole(userRoleToChange.value) {
                 loadingRoleChange.value = false
@@ -140,22 +141,6 @@ fun ViewUserHistory(user: MUser?, onClose: () -> Unit){
     }
 }
 
-@Composable
-fun ConfirmPopUp(user: MUser?, onConfirm: () -> Unit, onClose: () -> Unit) {
-    PopUpTemplate(onClose) {
-        Text(
-            text = "Are you sure you want to change role of ${user?.username}? User now " +
-                    "${if (user?.role == "user") "won't" else "will"} be able to add food to fridge",
-            modifier = Modifier.padding(vertical = 10.dp, horizontal = 5.dp),
-            overflow = TextOverflow.Clip,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colors.primaryVariant
-        )
-        Button(onClick = { onConfirm() }) {
-            Text(text = "Confirm", color = MaterialTheme.colors.primaryVariant)
-        }
-    }
-}
 
 
 @Composable
