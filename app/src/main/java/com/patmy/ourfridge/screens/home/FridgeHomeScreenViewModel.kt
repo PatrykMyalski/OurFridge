@@ -6,6 +6,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
+import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.model.MFHistory
 import com.patmy.ourfridge.model.MFood
 import com.patmy.ourfridge.model.MFridge
@@ -28,8 +29,10 @@ class FridgeHomeScreenViewModel : ViewModel() {
                         val currentFridge = fridgeData.toObject<MFridge>()
                         onDone(currentUser, currentFridge)
                     }.addOnFailureListener {
-                        Log.d("FB",
-                            "Exception occurs when tries to get fridge data: $it")
+                        Log.d(
+                            "FB",
+                            "Exception occurs when tries to get fridge data: $it"
+                        )
                     }
             } else {
                 val currentFridge = null
@@ -46,21 +49,32 @@ class FridgeHomeScreenViewModel : ViewModel() {
         currentUser?.fridge = userUId
         currentUser?.role = "admin"
 
-        val emptyHistoryArray = listOf<MFHistory?>(MFHistory())
+        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+        val currentDateTime = LocalDateTime.now().format(formatter)
+
+        val historyArray = listOf<MFHistory?>(
+            MFHistory(
+                historyId = UUID.randomUUID().toString(),
+                creatorId = userUId,
+                event = "Fridge created $currentDateTime"
+            )
+        )
         val emptyFridgeFoodArray = listOf<MFood?>(MFood())
         val userList = listOf(currentUser)
-
         val fridgeId = userUId.substring(userUId.length - 6, userUId.length)
 
-        val newFridge = MFridge(fridgeId, userList, emptyFridgeFoodArray, emptyHistoryArray)
+        val newFridge = MFridge(fridgeId, userList, emptyFridgeFoodArray, historyArray)
 
         db.collection("fridges").document(userUId).set(newFridge).addOnSuccessListener {
-            db.collection("users").document(userUId).update("fridge", userUId, "role", currentUser?.role)
+            db.collection("users").document(userUId)
+                .update("fridge", userUId, "role", currentUser?.role)
                 .addOnSuccessListener {
                     onFridgeCreated(newFridge, currentUser)
                 }.addOnFailureListener {
-                    Log.d("FB",
-                        "Exception occurs when updating fridgeId in User data: $it")
+                    Log.d(
+                        "FB",
+                        "Exception occurs when updating fridgeId in User data: $it"
+                    )
                 }
 
         }.addOnFailureListener {
@@ -74,7 +88,6 @@ class FridgeHomeScreenViewModel : ViewModel() {
         fridge: MFridge,
         onFoodAdded: (MFridge) -> Unit,
     ) {
-        //TODO adding event on user events and fridge events
         val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
         val currentDateTime = LocalDateTime.now().format(formatter)
 
@@ -89,17 +102,59 @@ class FridgeHomeScreenViewModel : ViewModel() {
             fridge.foodInside += newFood
         }
 
+        val newEvent = MFHistory(
+            historyId = UUID.randomUUID().toString(),
+            creatorId = userUId,
+            foodId = newFood.id,
+            event = "${currentUser?.username} added ${newFood.title} to fridge. $currentDateTime"
+        )
+
+        fridge.fridgeHistory += newEvent
+
         db.collection("fridges").document(currentUser?.fridge.toString())
-            .update("foodInside", fridge.foodInside).addOnSuccessListener {
+            .update("foodInside", fridge.foodInside, "fridgeHistory", fridge.fridgeHistory)
+            .addOnSuccessListener {
                 onFoodAdded(fridge)
             }.addOnFailureListener {
-                Log.d("FB",
-                    "Exception occurs during adding food to fridge: $it")
+                Log.d(
+                    "FB",
+                    "Exception occurs during adding food to fridge: $it"
+                )
             }
     }
 
-    fun deleteFood(food: MFood?){
-        //TODO
+    fun deleteFood(food: MFood?, onDone: () -> Unit) {
+
+        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+        val currentDateTime = LocalDateTime.now().format(formatter)
+
+        val newArray =
+            UserAndFridgeData.fridge?.foodInside?.filterNot { it?.id == food?.id }?.toMutableList()
+        if (newArray?.size == 0) {
+            newArray += MFood()
+        }
+
+        val historyEvent = MFHistory(
+            historyId = UUID.randomUUID().toString(),
+            foodId = food?.id,
+            creatorId = userUId,
+            event = "${UserAndFridgeData.user?.username} took out ${food?.title} $currentDateTime"
+        )
+
+        val historyUpdate = UserAndFridgeData.fridge?.fridgeHistory?.plus(historyEvent)
+
+        val fridgeUId = UserAndFridgeData.fridge!!.fridgeUsers[0]?.fridge!!
+
+        db.collection("fridges").document(fridgeUId)
+            .update("foodInside", newArray, "fridgeHistory", historyUpdate)
+            .addOnSuccessListener {
+                val updateFridge = UserAndFridgeData.fridge
+                updateFridge?.fridgeHistory = historyUpdate!!
+                updateFridge?.foodInside = newArray!!
+                UserAndFridgeData.setData(updateFridge = updateFridge)
+                onDone()
+            }
+
 
     }
 

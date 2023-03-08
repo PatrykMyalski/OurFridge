@@ -2,7 +2,6 @@ package com.patmy.ourfridge.screens.home
 
 import android.util.Log
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
@@ -13,7 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -114,7 +112,6 @@ fun FridgeHomeScreen(
                         }
                     },
                     onAddFoodToFridge = { food ->
-                        //TODO adding history event to fridge and user
                         loadingInAddFoodForm.value = true
                         viewModel.addFoodToFridge(
                             food,
@@ -267,11 +264,15 @@ fun HomeScreenView(
 
         ConfirmPopUp(text = confirmationText,
             onConfirm = {
-                viewModel.deleteFood(foodToDelete.value)
-        }, onClose = {
-            foodToDelete.value = null
-            confirmFoodDeleting.value = false
-        })
+                viewModel.deleteFood(foodToDelete.value) {
+                    foodToDelete.value = null
+                    showFoodInfo.value = false
+                    confirmFoodDeleting.value = false
+                }
+            }, onClose = {
+                foodToDelete.value = null
+                confirmFoodDeleting.value = false
+            })
     }
 
     if (showAddFoodMenu.value) {
