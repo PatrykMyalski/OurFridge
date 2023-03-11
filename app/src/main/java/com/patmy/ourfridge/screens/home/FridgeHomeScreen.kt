@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
@@ -13,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -22,7 +20,6 @@ import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.components.*
 import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.model.MFood
-import com.patmy.ourfridge.model.radioUnits
 import com.patmy.ourfridge.navigation.OurFridgeScreens
 import kotlinx.coroutines.launch
 
@@ -52,6 +49,10 @@ fun FridgeHomeScreen(
         mutableStateOf(false)
     }
 
+    val showHistory = remember {
+        mutableStateOf(false)
+    }
+
     if (UserAndFridgeData.user == null && !loggingOut.value) {
         viewModel.getData { updateUser, updateFridge ->
             if (updateUser !== null) {
@@ -73,8 +74,10 @@ fun FridgeHomeScreen(
 
     Scaffold(scaffoldState = scaffoldState,
         topBar = {
-            OurFridgeAppTopBar(onProfileClicked = {
+            OurFridgeAppTopBar(screen = "home",onProfileClicked = {
                 scope.launch { scaffoldState.drawerState.open() }
+            }, onShowHistory = {
+                showHistory.value = true
             })
         },
         drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
@@ -100,6 +103,7 @@ fun FridgeHomeScreen(
                 }
             } else {
                 HomeScreenView(
+                    showHistory = showHistory.value,
                     loadingFridge = loadingFridge.value,
                     loadingInAddFoodForm = loadingInAddFoodForm.value,
                     viewModel = viewModel,
@@ -121,6 +125,9 @@ fun FridgeHomeScreen(
                             UserAndFridgeData.setData(updateFridge = updatedFridge)
                             loadingInAddFoodForm.value = false
                         }
+                    },
+                    onCloseHistory = {
+                        showHistory.value = false
                     }
                 )
             }
@@ -131,12 +138,14 @@ fun FridgeHomeScreen(
 
 @Composable
 fun HomeScreenView(
+    showHistory: Boolean,
     loadingFridge: Boolean,
     loadingInAddFoodForm: Boolean,
     viewModel: FridgeHomeScreenViewModel,
     onJoinFridge: () -> Unit,
     onCreateFridge: () -> Unit,
     onAddFoodToFridge: (MFood) -> Unit,
+    onCloseHistory: () -> Unit,
 ) {
 
     val showFoodInfo = remember { mutableStateOf(false) }
@@ -153,6 +162,7 @@ fun HomeScreenView(
     val foodToDelete = remember {
         mutableStateOf<MFood?>(null)
     }
+
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -244,16 +254,28 @@ fun HomeScreenView(
                 }
             }
         }
-
     }
 
+
+    if (showHistory) {
+        ShowHistory {
+            onCloseHistory()
+        }
+    }
 
 
     if (showFoodInfo.value) {
         ShowFoodInfo(foodInfo.value, onClose = { showFoodInfo.value = false }, onDelete = {
             foodToDelete.value = it
             confirmFoodDeleting.value = true
-
+        }, onDecreaseFoodQuantity = { foodToDecrease, quantityToDecrease ->
+            viewModel.changeFoodQuantity("-", foodToDecrease, quantityToDecrease) {
+                showFoodInfo.value = false
+            }
+        }, onIncreaseFoodQuantity = { foodToIncrease, quantityToIncrease ->
+            viewModel.changeFoodQuantity("+", foodToIncrease, quantityToIncrease) {
+                showFoodInfo.value = false
+            }
         })
     }
 
@@ -287,179 +309,5 @@ fun HomeScreenView(
                 )
             )
         })
-    }
-}
-
-
-@Composable
-fun AddFoodMenu(
-    loading: Boolean,
-    onClose: () -> Unit,
-    onAdd: (foodTitle: String, foodQuantity: String, foodUnit: String) -> Unit,
-) {
-    val foodTitleState = remember {
-        mutableStateOf("")
-    }
-    val foodQuantityState = remember {
-        mutableStateOf("")
-    }
-
-    val (selectedUnit, onUnitSelected) = remember {
-        mutableStateOf(radioUnits[0].displayValue)
-    }
-
-    PopUpWithTextField(onClose = onClose) {
-        Column(modifier = Modifier.padding(top = 15.dp, bottom = 15.dp)) {
-            InputField(
-                valueState = foodTitleState,
-                label = "Name",
-                enabled = true,
-                keyboardType = KeyboardType.Text
-            )
-            InputField(
-                valueState = foodQuantityState,
-                label = "Quantity",
-                enabled = true,
-                keyboardType = KeyboardType.Number
-            )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 10.dp, end = 15.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                radioUnits.forEach { text ->
-                    val unit = text.displayValue
-                    Row(modifier = Modifier
-                        .selectable(
-                            selected = (unit == selectedUnit),
-                            onClick = {
-                                onUnitSelected(unit)
-                            }
-                        )
-                        .padding(4.dp),
-                        verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = (unit == selectedUnit),
-                            onClick = { onUnitSelected(unit) })
-                        Text(text = unit)
-                    }
-                }
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-
-                AddFoodMenuButtons(
-                    title = "Close",
-                    elevation = ButtonDefaults.elevation(
-                        defaultElevation = 5.dp,
-                        pressedElevation = 3.dp,
-                        disabledElevation = 0.dp,
-                        hoveredElevation = 8.dp,
-                        focusedElevation = 8.dp
-                    ),
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = MaterialTheme.colors.primary,
-                        contentColor = MaterialTheme.colors.primaryVariant
-                    ),
-                    enabled = true
-                ) {
-                    onClose()
-                }
-
-                AddFoodMenuButtons(
-                    title = if (loading) "Loading..." else "+Add",
-                    elevation = ButtonDefaults.elevation(
-                        defaultElevation = 5.dp,
-                        pressedElevation = 3.dp,
-                        disabledElevation = 5.dp,
-                        hoveredElevation = 8.dp,
-                        focusedElevation = 8.dp
-                    ),
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = MaterialTheme.colors.primary,
-                        contentColor = MaterialTheme.colors.primaryVariant,
-                        disabledBackgroundColor = MaterialTheme.colors.primary,
-                        disabledContentColor = MaterialTheme.colors.background
-                    ),
-                    enabled = foodTitleState.value.trim()
-                        .isNotEmpty() && foodQuantityState.value.trim().isNotEmpty()
-                ) {
-                    onAdd(foodTitleState.value, foodQuantityState.value, selectedUnit)
-                    if (!loading) {
-                        onClose()
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-//TODO in the future add possibility of deleting food or decreasing quantity in this composable
-// -reduce boilerplate code by extracting Cards into one Compose
-// -improve looks of this compose
-@Composable
-fun ShowFoodInfo(foodInfo: MFood?, onClose: () -> Unit, onDelete: (MFood?) -> Unit) {
-
-    val showInfo = remember {
-        mutableStateOf(true)
-    }
-
-    if (showInfo.value) {
-        PopUpTemplate(onClose = { onClose() }) {
-            FoodInfoView(foodInfo, onClose) {
-                showInfo.value = false
-            }
-        }
-    } else {
-        PopUpWithTextField(onClose = onClose) {
-            FoodChangeView(foodInfo, onClose, onDelete = {
-                onDelete(foodInfo)
-            }, onQuantityChange = { type, value ->
-                // TODO on quantity change, under type there is "-" for decreasing quantity and "+" for increasing quantity
-            })
-        }
-    }
-}
-
-
-//TODO make it better looking
-@Composable
-fun FoodChangeView(
-    foodInfo: MFood?,
-    onClose: () -> Unit,
-    onDelete: () -> Unit,
-    onQuantityChange: (String, String) -> Unit,
-) {
-
-    val quantityState = remember {
-        mutableStateOf("")
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 15.dp), horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = "You are changing ${foodInfo?.title}.")
-        TextField(value = quantityState.value, onValueChange = { quantityState.value = it })
-        Row() {
-            FoodInfoButtons(text = "Take out") {
-                onQuantityChange("-", quantityState.value)
-            }
-            FoodInfoButtons(text = "Put in") {
-                onQuantityChange("+", quantityState.value)
-            }
-        }
-        Row() {
-            FoodInfoButtons(text = "Close") {
-                onClose()
-            }
-            FoodInfoButtons(text = "Delete") {
-                onDelete()
-            }
-        }
     }
 }

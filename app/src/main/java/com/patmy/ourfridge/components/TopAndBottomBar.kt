@@ -1,15 +1,18 @@
 package com.patmy.ourfridge.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.People
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,21 +24,43 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.patmy.ourfridge.R
+import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.navigation.OurFridgeScreens
 
 @Composable
-fun OurFridgeAppTopBar(onProfileClicked: () -> Unit = {}) {
+fun OurFridgeAppTopBar(screen: String = "", onProfileClicked: () -> Unit = {}, onShowHistory: () -> Unit = {}) {
     TopAppBar(
         modifier = Modifier, backgroundColor = MaterialTheme.colors.primary,
         title = {
-            Text(text = "OurFridge", modifier = Modifier.padding(start = 70.dp),
-                color = MaterialTheme.colors.secondary,
-                fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(text = "OurFridge", modifier = Modifier,
+                    color = MaterialTheme.colors.secondary,
+                    fontSize = 18.sp, fontWeight = FontWeight.Bold)
+
+                if (screen == "home") {
+                    val interactionSource = remember {
+                        MutableInteractionSource()
+                    }
+                    Icon(
+                        imageVector = Icons.Default.History,
+                        contentDescription = "View History ",
+                        modifier = Modifier
+                            .size(50.dp)
+                            .clickable(interactionSource = interactionSource, indication = null) {
+                                if (UserAndFridgeData.user?.fridge != null && UserAndFridgeData.user?.fridge != "null") {
+                                    onShowHistory()
+                                }
+                            },
+                        tint = MaterialTheme.colors.primaryVariant,
+                    )
+                }
+            }
         },
         navigationIcon = {
             Icon(painter = painterResource(id = R.drawable.profile),
                 contentDescription = "profile icon",
                 modifier = Modifier
+                    .size(50.dp)
                     .clip(shape = CircleShape)
                     .clickable { onProfileClicked.invoke() },
                 tint = MaterialTheme.colors.secondary)

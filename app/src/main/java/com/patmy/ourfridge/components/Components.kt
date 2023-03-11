@@ -22,16 +22,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import com.patmy.ourfridge.model.MFood
 
 
 @Composable
 fun ErrorMessage(text: String) {
-    Text(text = text,
-        modifier = Modifier.padding(20.dp),
+    Text(
+        text = text,
+        modifier = Modifier.padding(horizontal = 15.dp),
         fontSize = 16.sp,
         color = MaterialTheme.colors.error,
-        textAlign = TextAlign.Center)
+        textAlign = TextAlign.Center
+    )
 }
 
 @Composable
@@ -67,40 +68,6 @@ fun InputField(
     )
 }
 
-@Composable
-fun FoodLabel(food: MFood?, onClick: () -> Unit) {
-    Column(modifier = Modifier.padding(4.dp)) {
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick.invoke() }) {
-            Text(text = food?.title.toString(), modifier = Modifier.padding(end = 18.dp))
-            Text(text = food?.quantity.toString(), modifier = Modifier.padding(end = 2.dp))
-            Text(text = food?.unit.toString())
-        }
-        Divider(modifier = Modifier.fillMaxWidth(), color = Color.Black, thickness = 1.dp)
-    }
-}
-
-@Composable
-fun AddFoodMenuButtons(
-    title: String,
-    elevation: ButtonElevation?,
-    colors: ButtonColors,
-    enabled: Boolean,
-    onClick: () -> Unit,
-) {
-    Button(onClick = { onClick.invoke() },
-        modifier = Modifier
-            .width(130.dp)
-            .height(50.dp)
-            .padding(horizontal = 10.dp),
-        elevation = elevation,
-        shape = RoundedCornerShape(25),
-        colors = colors,
-        enabled = enabled) {
-        Text(text = title)
-    }
-}
 
 @Composable
 fun PopUpTemplate(onClose: () -> Unit, content: @Composable () -> Unit) {
@@ -157,7 +124,8 @@ fun PopUpWithTextField(onClose: () -> Unit, content: @Composable () -> Unit) {
 @Composable
 fun ConfirmPopUp(text: String, onConfirm: () -> Unit, onClose: () -> Unit) {
     PopUpTemplate(onClose) {
-        Text(text = text,
+        Text(
+            text = text,
             modifier = Modifier.padding(vertical = 10.dp, horizontal = 5.dp),
             overflow = TextOverflow.Clip,
             textAlign = TextAlign.Center,

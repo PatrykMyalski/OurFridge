@@ -100,6 +100,7 @@ class FridgeHomeScreenViewModel : ViewModel() {
             fridge.foodInside = listOf(newFood)
         } else {
             fridge.foodInside += newFood
+            fridge.foodInside = fridge.foodInside.sortedBy { it?.title }
         }
 
         val newEvent = MFHistory(
@@ -155,6 +156,45 @@ class FridgeHomeScreenViewModel : ViewModel() {
                 onDone()
             }
 
+    }
+
+    fun changeFoodQuantity(action: String, food: MFood?, quantity: String, onDone: () -> Unit) {
+
+        val fridgeUId = UserAndFridgeData.fridge!!.fridgeUsers[0]?.fridge!!
+
+        val index = UserAndFridgeData.fridge?.foodInside?.indexOfFirst { it == food }
+
+        val newQuantity =
+            if (action == "-") food?.quantity!!.toInt() - quantity.toInt()
+            else food?.quantity!!.toInt() + quantity.toInt()
+
+        UserAndFridgeData.fridge?.foodInside!![index!!]?.quantity = newQuantity.toString()
+
+
+        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
+        val currentDateTime = LocalDateTime.now().format(formatter)
+
+        val historyEvent = MFHistory(
+            historyId = UUID.randomUUID().toString(),
+            foodId = food.id,
+            creatorId = userUId,
+            event = "${UserAndFridgeData.user?.username} ${
+                if (action == "-") "took out"
+                else "added"
+            } $quantity ${food.unit} of ${food.title} $currentDateTime"
+        )
+
+        UserAndFridgeData.fridge?.fridgeHistory?.plus(historyEvent)
+
+        db.collection("fridges").document(fridgeUId)
+            .update(
+                "foodInside",
+                UserAndFridgeData.fridge?.foodInside,
+                "fridgeHistory",
+                UserAndFridgeData.fridge?.fridgeHistory
+            ).addOnSuccessListener {
+                onDone()
+            }
 
     }
 
