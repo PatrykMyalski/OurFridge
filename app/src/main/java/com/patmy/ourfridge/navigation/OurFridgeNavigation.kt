@@ -7,6 +7,7 @@ import androidx.navigation.compose.rememberNavController
 import com.patmy.ourfridge.screens.home.FridgeHomeScreen
 import com.patmy.ourfridge.screens.login.LoginScreen
 import com.patmy.ourfridge.screens.registration.RegistrationScreen
+import com.patmy.ourfridge.screens.shopping.ShoppingScreen
 import com.patmy.ourfridge.screens.social.SocialScreen
 import com.patmy.ourfridge.screens.splash.SplashScreen
 
@@ -29,6 +30,9 @@ fun OurFridgeNavigation() {
         }
         composable(OurFridgeScreens.SplashScreen.name){
             SplashScreen(navController = navController)
+        }
+        composable(OurFridgeScreens.ShoppingScreen.name){
+            ShoppingScreen(navController = navController)
         }
     }
 }

@@ -8,9 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -76,17 +74,22 @@ fun OurFridgeAppBottomBar(
 
     BottomAppBar(modifier = Modifier, backgroundColor = MaterialTheme.colors.primary) {
         Row(modifier = Modifier.fillMaxWidth()) {
-            BottomAppBarIcon(modifier = Modifier.fillMaxWidth(0.5f),
+            BottomAppBarIcon(modifier = Modifier.fillMaxWidth(0.333f),
                 title = "People",
                 icon = Icons.Default.People,
                 highlight = currentScreen == "social") {
                 navController.navigate(OurFridgeScreens.SocialScreen.name)
             }
-            BottomAppBarIcon(modifier = Modifier.fillMaxWidth(),
+            BottomAppBarIcon(modifier = Modifier.fillMaxWidth(0.5f),
                 title = "Home",
                 icon = Icons.Default.Home,
                 highlight = currentScreen == "home") {
                 navController.navigate(OurFridgeScreens.FridgeHomeScreen.name)
+            }
+            BottomAppBarIcon(modifier = Modifier.fillMaxWidth(),
+                title = "Shopping",
+                icon = Icons.Default.AddShoppingCart, highlight = currentScreen == "shopping") {
+                navController.navigate(OurFridgeScreens.ShoppingScreen.name)
             }
         }
     }

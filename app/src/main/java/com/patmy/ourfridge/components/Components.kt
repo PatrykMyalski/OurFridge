@@ -4,12 +4,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import com.patmy.ourfridge.model.MFood
+import com.patmy.ourfridge.model.radioUnits
 
 
 @Composable
@@ -133,6 +138,135 @@ fun ConfirmPopUp(text: String, onConfirm: () -> Unit, onClose: () -> Unit) {
         )
         Button(onClick = { onConfirm() }) {
             Text(text = "Confirm", color = MaterialTheme.colors.primaryVariant)
+        }
+    }
+}
+
+@Composable
+fun AddFoodMenuButtons(
+    title: String,
+    elevation: ButtonElevation?,
+    colors: ButtonColors,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    Button(onClick = { onClick.invoke() },
+        modifier = Modifier
+            .width(130.dp)
+            .height(50.dp)
+            .padding(horizontal = 10.dp),
+        elevation = elevation,
+        shape = RoundedCornerShape(25),
+        colors = colors,
+        enabled = enabled) {
+        Text(text = title)
+    }
+}
+@Composable
+fun AddFoodMenu(
+    loading: Boolean,
+    onClose: () -> Unit,
+    onAdd: (MFood) -> Unit,
+) {
+    val foodTitleState = remember {
+        mutableStateOf("")
+    }
+    val foodQuantityState = remember {
+        mutableStateOf("")
+    }
+
+    val (selectedUnit, onUnitSelected) = remember {
+        mutableStateOf(radioUnits[0].displayValue)
+    }
+
+    PopUpWithTextField(onClose = onClose) {
+        Column(modifier = Modifier.padding(top = 15.dp, bottom = 15.dp)) {
+            InputField(
+                valueState = foodTitleState,
+                label = "Name",
+                enabled = true,
+                keyboardType = KeyboardType.Text
+            )
+            InputField(
+                valueState = foodQuantityState,
+                label = "Quantity",
+                enabled = true,
+                keyboardType = KeyboardType.Number
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, end = 15.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                radioUnits.forEach { text ->
+                    val unit = text.displayValue
+                    Row(modifier = Modifier
+                        .selectable(
+                            selected = (unit == selectedUnit),
+                            onClick = {
+                                onUnitSelected(unit)
+                            }
+                        )
+                        .padding(4.dp),
+                        verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(selected = (unit == selectedUnit),
+                            onClick = { onUnitSelected(unit) })
+                        Text(text = unit)
+                    }
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+
+                AddFoodMenuButtons(
+                    title = "Close",
+                    elevation = ButtonDefaults.elevation(
+                        defaultElevation = 5.dp,
+                        pressedElevation = 3.dp,
+                        disabledElevation = 0.dp,
+                        hoveredElevation = 8.dp,
+                        focusedElevation = 8.dp
+                    ),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = MaterialTheme.colors.primary,
+                        contentColor = MaterialTheme.colors.primaryVariant
+                    ),
+                    enabled = true
+                ) {
+                    onClose()
+                }
+
+                AddFoodMenuButtons(
+                    title = if (loading) "Loading..." else "+Add",
+                    elevation = ButtonDefaults.elevation(
+                        defaultElevation = 5.dp,
+                        pressedElevation = 3.dp,
+                        disabledElevation = 5.dp,
+                        hoveredElevation = 8.dp,
+                        focusedElevation = 8.dp
+                    ),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = MaterialTheme.colors.primary,
+                        contentColor = MaterialTheme.colors.primaryVariant,
+                        disabledBackgroundColor = MaterialTheme.colors.primary,
+                        disabledContentColor = MaterialTheme.colors.background
+                    ),
+                    enabled = foodTitleState.value.trim()
+                        .isNotEmpty() && foodQuantityState.value.trim().isNotEmpty()
+                ) {
+                    onAdd(MFood(
+                        title = foodTitleState.value,
+                        quantity = foodQuantityState.value,
+                        unit = selectedUnit
+                    ))
+                    if (!loading) {
+                        onClose()
+                    }
+                }
+            }
         }
     }
 }

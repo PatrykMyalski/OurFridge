@@ -300,14 +300,8 @@ fun HomeScreenView(
     if (showAddFoodMenu.value) {
         AddFoodMenu(loading = loadingInAddFoodForm, onClose = {
             showAddFoodMenu.value = false
-        }, onAdd = { newFoodTitle, newFoodQuantity, newFoodUnit ->
-            onAddFoodToFridge(
-                MFood(
-                    title = newFoodTitle,
-                    quantity = newFoodQuantity,
-                    unit = newFoodUnit
-                )
-            )
+        }, onAdd = {
+            onAddFoodToFridge(it)
         })
     }
 }

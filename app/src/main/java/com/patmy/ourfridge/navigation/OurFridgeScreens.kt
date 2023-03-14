@@ -5,7 +5,8 @@ enum class OurFridgeScreens {
     FridgeHomeScreen,
     LoginScreen,
     RegistrationScreen,
-    SocialScreen;
+    SocialScreen,
+    ShoppingScreen;
     companion object {
         fun fromRoute(route: String?): OurFridgeScreens
         = when(route?.substringBefore("/")) {
@@ -14,6 +15,7 @@ enum class OurFridgeScreens {
             LoginScreen.name -> LoginScreen
             RegistrationScreen.name -> RegistrationScreen
             SocialScreen.name -> SocialScreen
+            ShoppingScreen.name -> ShoppingScreen
             null -> FridgeHomeScreen
             else -> throw IllegalArgumentException("Route $route is not recognized")
         }
