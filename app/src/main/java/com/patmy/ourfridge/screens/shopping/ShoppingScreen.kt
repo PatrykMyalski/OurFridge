@@ -18,11 +18,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.components.*
+import com.patmy.ourfridge.model.MArticle
 import com.patmy.ourfridge.model.MFood
 import com.patmy.ourfridge.navigation.OurFridgeScreens
 import kotlinx.coroutines.launch
@@ -44,6 +47,14 @@ fun ShoppingScreen(
 
     val showArticleAddMenu = remember {
         mutableStateOf(false)
+    }
+
+    val shoppingList = remember {
+        mutableListOf<MArticle>()
+    }
+
+    if (shoppingList.isEmpty()){
+        //viewModel.getData()
     }
 
 
@@ -77,7 +88,7 @@ fun ShoppingScreen(
                 .fillMaxSize()
                 .padding(it)
         ) {
-            ShoppingMainView(viewModel)
+            ShoppingMainView(shoppingList, viewModel)
         }
         if (showArticleAddMenu.value) {
             AddFoodMenu(loading = false, onClose = { showArticleAddMenu.value = false }, onAdd = {
@@ -89,14 +100,9 @@ fun ShoppingScreen(
 
 
 @Composable
-fun ShoppingMainView(viewModel: ShoppingScreenViewModel) {
+fun ShoppingMainView(shoppingList: List<MArticle?>, viewModel: ShoppingScreenViewModel) {
 
-    val shoppingList = remember {
-        mutableListOf<MFood>(
-            MFood("adnuisebhfiuwregbvi", "chicken"),
-            MFood("adnuisebhfhgrthregbvi", "Pork")
-        )
-    }
+
 
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         ShoppingInfoText(text = "Our shopping list")
@@ -113,24 +119,30 @@ fun ShoppingMainView(viewModel: ShoppingScreenViewModel) {
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                println(shoppingList.size)
-                if (shoppingList.size == 0) {
+                if (shoppingList.isEmpty()) {
                     ShoppingInfoText(text = "Add shopping articles using add button")
                 } else {
                     for (article in shoppingList) {
-                        ArticleLabel(article, viewModel)
+                        ArticleLabel(article, viewModel){
+                            //viewModel.deleteArticle(it)
+                        }
                     }
                 }
             }
         }
+        AddArticlesButton {
+            //TODO
+        }
     }
 }
 
+
+
 @Composable
-fun ArticleLabel(articleInfo: MFood, viewModel: ShoppingScreenViewModel) {
+fun ArticleLabel(articleInfo: MArticle?, viewModel: ShoppingScreenViewModel, onDeleteArticle: (MArticle?) -> Unit) {
 
     val checked = remember {
-        mutableStateOf(false)
+        mutableStateOf(articleInfo?.checked!!)
     }
 
     Row(
@@ -151,7 +163,7 @@ fun ArticleLabel(articleInfo: MFood, viewModel: ShoppingScreenViewModel) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ShoppingInfoText(text = articleInfo.title.toString(), padding = 0)
+                ShoppingInfoText(text = articleInfo?.title.toString(), padding = 0)
                 Card(
                     modifier = Modifier.size(20.dp),
                     backgroundColor = if (!checked.value) Color(0xFF9CD857) else Color(0xFF559B05),
@@ -161,7 +173,15 @@ fun ArticleLabel(articleInfo: MFood, viewModel: ShoppingScreenViewModel) {
                         imageVector = Icons.Default.Check,
                         contentDescription = "Check",
                         modifier = Modifier.clickable {
-                            //TODO
+                            /* if (!checked.value) {
+                                viewModel.checkArticle(articleInfo){
+                                    checked.value = true
+                                }
+                            } else {
+                                viewModel.uncheckArticle(articleInfo){
+                                    checked.value = false
+                                }
+                            }*/
                         },
                         tint = Color.Black
                     )
@@ -176,7 +196,7 @@ fun ArticleLabel(articleInfo: MFood, viewModel: ShoppingScreenViewModel) {
                 interactionSource = interactionSource,
                 indication = null
             ) {
-                //TODO
+                onDeleteArticle(articleInfo)
             },
             tint = MaterialTheme.colors.secondary
         )
