@@ -9,6 +9,7 @@ import com.google.firebase.firestore.ktx.toObjects
 import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.model.MFridge
+import com.patmy.ourfridge.model.MShoppingList
 import com.patmy.ourfridge.model.MUser
 
 class SocialScreenViewModel : ViewModel() {
@@ -76,12 +77,18 @@ class SocialScreenViewModel : ViewModel() {
                     val fridgeUId =
                         fridge[0].fridgeUsers[0]?.fridge.toString()     // getting fridge id from fridge creator
                     currentUser?.fridge = fridgeUId
+
                     db.collection("users").document(userUId)
                         .update("fridge", fridgeUId, "role", currentUser?.role)
                         .addOnSuccessListener {
                             fridgeRef.document(fridgeUId).update("fridgeUsers", fridgeUsersToUpdate)
                                 .addOnSuccessListener {
-                                    joinedToFridge(currentUser, fridge[0])
+                                    db.collection("shopping_lists").document(fridgeUId).get().addOnSuccessListener {shoppingList ->
+                                        val shoppingListUpdate = shoppingList.toObject<MShoppingList>()
+                                        UserAndFridgeData.shoppingList = shoppingListUpdate
+                                        joinedToFridge(currentUser, fridge[0])
+                                    }
+
                                 }.addOnFailureListener {
                                     Log.d(
                                         "FB",

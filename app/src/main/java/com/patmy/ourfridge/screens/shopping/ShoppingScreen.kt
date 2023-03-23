@@ -11,22 +11,19 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.components.*
+import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.model.MArticle
-import com.patmy.ourfridge.model.MFood
+import com.patmy.ourfridge.model.MShoppingList
 import com.patmy.ourfridge.navigation.OurFridgeScreens
 import kotlinx.coroutines.launch
 
@@ -45,18 +42,23 @@ fun ShoppingScreen(
         mutableStateOf(false)
     }
 
+    val loadingInAddArticles = remember {
+        mutableStateOf(false)
+    }
+
     val showArticleAddMenu = remember {
         mutableStateOf(false)
     }
 
+    val showAddToFridgeConfirm = remember {
+        mutableStateOf(false)
+    }
+
     val shoppingList = remember {
-        mutableListOf<MArticle>()
+        mutableStateOf(UserAndFridgeData.shoppingList)
     }
 
-    if (shoppingList.isEmpty()){
-        //viewModel.getData()
-    }
-
+    println(shoppingList.value)
 
     Scaffold(scaffoldState = scaffoldState,
         topBar = {
@@ -88,20 +90,105 @@ fun ShoppingScreen(
                 .fillMaxSize()
                 .padding(it)
         ) {
-            ShoppingMainView(shoppingList, viewModel)
+            if (shoppingList.value?.shoppingList != null) {
+                ShoppingMainView(shoppingList.value?.shoppingList,
+                    viewModel,
+                    loadingInAddArticles.value,
+                    onDelete = {
+                        loadingInAddArticles.value = !loadingInAddArticles.value
+                    },
+                    onAddArticles = {
+                        showAddToFridgeConfirm.value = true
+                    })
+            } else {
+                Text(text = "Join or create fridge to access this screen")
+            }
+
         }
         if (showArticleAddMenu.value) {
-            AddFoodMenu(loading = false, onClose = { showArticleAddMenu.value = false }, onAdd = {
-                //TODO
+            AddFoodMenu(
+                loading = false,
+                onClose = { showArticleAddMenu.value = false },
+                onAdd = { article ->
+                    loadingInAddArticles.value = true
+                    viewModel.onAddArticle(article) { shoppingListUpdate ->
+                        shoppingList.value?.shoppingList = shoppingListUpdate
+                        loadingInAddArticles.value = false
+                    }
+                })
+        }
+        if (showAddToFridgeConfirm.value) {
+            AddToFridgeConfirm(onDoNotDelete = {
+                viewModel.finishShopping(false, shoppingList.value?.shoppingList!!){
+                    showAddToFridgeConfirm.value = false
+                }
+            }, onDelete = {
+                viewModel.finishShopping(true, shoppingList.value?.shoppingList!!){
+                    showAddToFridgeConfirm.value = false
+                }
+            }, onClose = {
+                showAddToFridgeConfirm.value = false
             })
         }
     }
 }
 
+@Composable
+fun AddToFridgeConfirm(onClose: () -> Unit, onDoNotDelete: () -> Unit, onDelete: () -> Unit) {
+    PopUpTemplate(onClose = { onClose() }) {
+        Column(
+            modifier = Modifier
+                .padding(10.dp)
+                .fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            AddToFridgeConfirmText(text = "You will add all checked articles to the fridge.")
+            Spacer(modifier = Modifier.height(5.dp))
+            AddToFridgeConfirmText(text = "Do you want to delete all unchecked articles?")
+            Spacer(modifier = Modifier.height(12.dp))
+            AddToFridgeConfirmText(text = "If you want to go back just click outside this popup.")
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp, top = 10.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                AddToFridgeConfirmButton(title = "Delete") {
+                    onDelete()
+                }
+                Spacer(modifier = Modifier.width(50.dp))
+                AddToFridgeConfirmButton(title = "Don't delete") {
+                    onDoNotDelete()
+                }
+            }
+        }
+    }
+}
+@Composable
+fun AddToFridgeConfirmText(text: String) {
+    Text(text = text, modifier = Modifier.padding(horizontal = 5.dp), textAlign = TextAlign.Center, color = MaterialTheme.colors.primaryVariant)
+}
+@Composable
+fun AddToFridgeConfirmButton(title: String, onClick: () -> Unit) {
+    Button(
+        onClick = { onClick() },
+        modifier = Modifier,
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = MaterialTheme.colors.primary,
+            contentColor = MaterialTheme.colors.primaryVariant
+        )
+    ) {
+        Text(text = title)
+    }
+}
 
 @Composable
-fun ShoppingMainView(shoppingList: List<MArticle?>, viewModel: ShoppingScreenViewModel) {
-
+fun ShoppingMainView(
+    shoppingList: List<MArticle?>?,
+    viewModel: ShoppingScreenViewModel,
+    loading: Boolean,
+    onDelete: () -> Unit,
+    onAddArticles: () -> Unit,
+) {
 
 
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -119,27 +206,33 @@ fun ShoppingMainView(shoppingList: List<MArticle?>, viewModel: ShoppingScreenVie
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (shoppingList.isEmpty()) {
+                if (shoppingList!![0]?.id == null || shoppingList[0]?.id == "null") {
                     ShoppingInfoText(text = "Add shopping articles using add button")
                 } else {
                     for (article in shoppingList) {
-                        ArticleLabel(article, viewModel){
-                            //viewModel.deleteArticle(it)
+                        ArticleLabel(article, viewModel) {
+                            onDelete()
+                            viewModel.deleteArticle(it) {
+                                onDelete()
+                            }
                         }
                     }
                 }
             }
         }
-        AddArticlesButton {
-            //TODO
+        AddArticlesButton(loading) {
+            onAddArticles()
         }
     }
 }
 
 
-
 @Composable
-fun ArticleLabel(articleInfo: MArticle?, viewModel: ShoppingScreenViewModel, onDeleteArticle: (MArticle?) -> Unit) {
+fun ArticleLabel(
+    articleInfo: MArticle?,
+    viewModel: ShoppingScreenViewModel,
+    onDeleteArticle: (MArticle?) -> Unit,
+) {
 
     val checked = remember {
         mutableStateOf(articleInfo?.checked!!)
@@ -163,7 +256,11 @@ fun ArticleLabel(articleInfo: MArticle?, viewModel: ShoppingScreenViewModel, onD
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ShoppingInfoText(text = articleInfo?.title.toString(), padding = 0)
+                ShoppingInfoText(
+                    text = "${articleInfo?.title}${articleInfo?.quantity}${articleInfo?.unit}",
+                    modifier = Modifier.fillMaxWidth(0.85f),
+                    padding = 0
+                )
                 Card(
                     modifier = Modifier.size(20.dp),
                     backgroundColor = if (!checked.value) Color(0xFF9CD857) else Color(0xFF559B05),
@@ -173,15 +270,15 @@ fun ArticleLabel(articleInfo: MArticle?, viewModel: ShoppingScreenViewModel, onD
                         imageVector = Icons.Default.Check,
                         contentDescription = "Check",
                         modifier = Modifier.clickable {
-                            /* if (!checked.value) {
-                                viewModel.checkArticle(articleInfo){
+                            if (!checked.value) {
+                                viewModel.changeCheck(true, articleInfo) {
                                     checked.value = true
                                 }
                             } else {
-                                viewModel.uncheckArticle(articleInfo){
+                                viewModel.changeCheck(false, articleInfo) {
                                     checked.value = false
                                 }
-                            }*/
+                            }
                         },
                         tint = Color.Black
                     )
@@ -206,5 +303,4 @@ fun ArticleLabel(articleInfo: MArticle?, viewModel: ShoppingScreenViewModel, onD
 
 
 
-    
 

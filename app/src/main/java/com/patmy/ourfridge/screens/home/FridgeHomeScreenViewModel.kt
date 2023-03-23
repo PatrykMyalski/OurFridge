@@ -7,10 +7,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.data.UserAndFridgeData
-import com.patmy.ourfridge.model.MFHistory
-import com.patmy.ourfridge.model.MFood
-import com.patmy.ourfridge.model.MFridge
-import com.patmy.ourfridge.model.MUser
+import com.patmy.ourfridge.model.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -27,7 +24,12 @@ class FridgeHomeScreenViewModel : ViewModel() {
                 db.collection("fridges").document(currentUser.fridge.toString()).get()
                     .addOnSuccessListener { fridgeData ->
                         val currentFridge = fridgeData.toObject<MFridge>()
-                        onDone(currentUser, currentFridge)
+                        db.collection("shopping_lists").document(currentFridge!!.fridgeUsers[0]?.fridge.toString()).get().addOnSuccessListener {shoppingListData ->
+                            val currentShoppingList = shoppingListData.toObject<MShoppingList>()
+                            UserAndFridgeData.shoppingList = currentShoppingList
+                            onDone(currentUser, currentFridge)
+                        }
+
                     }.addOnFailureListener {
                         Log.d(
                             "FB",
@@ -65,11 +67,16 @@ class FridgeHomeScreenViewModel : ViewModel() {
 
         val newFridge = MFridge(fridgeId, userList, emptyFridgeFoodArray, historyArray)
 
+        val newShoppingList = MShoppingList(listOf<MArticle?>(MArticle()))
+
         db.collection("fridges").document(userUId).set(newFridge).addOnSuccessListener {
             db.collection("users").document(userUId)
                 .update("fridge", userUId, "role", currentUser?.role)
                 .addOnSuccessListener {
-                    onFridgeCreated(newFridge, currentUser)
+                    db.collection("shopping_lists").document(userUId).set(newShoppingList).addOnSuccessListener {
+                        onFridgeCreated(newFridge, currentUser)
+                        UserAndFridgeData.shoppingList = newShoppingList
+                    }
                 }.addOnFailureListener {
                     Log.d(
                         "FB",
@@ -155,7 +162,6 @@ class FridgeHomeScreenViewModel : ViewModel() {
                 UserAndFridgeData.setData(updateFridge = updateFridge)
                 onDone()
             }
-
     }
 
     fun changeFoodQuantity(action: String, food: MFood?, quantity: String, onDone: () -> Unit) {
@@ -195,9 +201,7 @@ class FridgeHomeScreenViewModel : ViewModel() {
             ).addOnSuccessListener {
                 onDone()
             }
-
     }
-
 }
 
 
