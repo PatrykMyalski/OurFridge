@@ -1,6 +1,8 @@
 package com.patmy.ourfridge.screens.home
 
+import android.annotation.SuppressLint
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -74,7 +77,7 @@ fun FridgeHomeScreen(
 
     Scaffold(scaffoldState = scaffoldState,
         topBar = {
-            OurFridgeAppTopBar(screen = "home",onProfileClicked = {
+            OurFridgeAppTopBar(screen = "home", onProfileClicked = {
                 scope.launch { scaffoldState.drawerState.open() }
             }, onShowHistory = {
                 showHistory.value = true
@@ -136,6 +139,7 @@ fun FridgeHomeScreen(
 }
 
 
+@SuppressLint("ShowToast")
 @Composable
 fun HomeScreenView(
     showHistory: Boolean,
@@ -162,6 +166,7 @@ fun HomeScreenView(
     val foodToDelete = remember {
         mutableStateOf<MFood?>(null)
     }
+
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -232,22 +237,28 @@ fun HomeScreenView(
                 }
             }
         } else {
+            val context = LocalContext.current
+            val toastDuration = Toast.LENGTH_SHORT
+            val toast = Toast.makeText(context, "As children you are not able to add food", toastDuration)
             Card(
                 modifier = Modifier
                     .width(340.dp)
-                    .height(50.dp)
-                    .clickable { showAddFoodMenu.value = true },
+                    .height(50.dp),
                 shape = RoundedCornerShape(bottomStart = 10.dp, bottomEnd = 10.dp),
                 backgroundColor = MaterialTheme.colors.primary
             ) {
                 Column(
+                    modifier = Modifier.clickable {
+                        if (UserAndFridgeData.user?.role != "child") showAddFoodMenu.value =
+                            true else toast.show()
+                    },
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = "+Add food",
                         modifier = Modifier,
-                        color = MaterialTheme.colors.primaryVariant,
+                        color = if (UserAndFridgeData.user?.role != "child") MaterialTheme.colors.primaryVariant else MaterialTheme.colors.background,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold
                     )

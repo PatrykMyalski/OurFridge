@@ -25,8 +25,8 @@ fun FAB(onClick: () -> Unit) {
 }
 
 @Composable
-fun ShoppingInfoText(text: String, modifier: Modifier = Modifier, padding: Int = 20){
-    Text(text = text, modifier = modifier.padding(vertical = padding.dp), textAlign = TextAlign.Start, fontSize = 24.sp, color = MaterialTheme.colors.primaryVariant)
+fun ShoppingInfoText(text: String, modifier: Modifier = Modifier, padding: Int = 20, textAlign: TextAlign = TextAlign.Start){
+    Text(text = text, modifier = modifier.padding(vertical = padding.dp), textAlign = textAlign, fontSize = 24.sp, color = MaterialTheme.colors.primaryVariant)
 }
 
 @Composable

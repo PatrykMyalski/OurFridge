@@ -147,7 +147,14 @@ fun UserForm(
 
         }
         if (!validForm.value && registration) {
-            ErrorMessage(text = "Email must include '@' and password must be at least 6 characters!")
+
+            if (!emailState.value.contains('@')){
+                ErrorMessage(text = "Email must include @!")
+            }
+            if (passwordState.value.length < 6){
+                ErrorMessage(text = "Password must be at least 6 characters!")
+            }
+
         }
         if ((userNotFound || !validForm.value) && !registration) {
             ErrorMessage(text = "Wrong email or password")

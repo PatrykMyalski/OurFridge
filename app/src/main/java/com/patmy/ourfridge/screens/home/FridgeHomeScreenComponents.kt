@@ -222,6 +222,10 @@ fun FoodLabel(food: MFood?, onClick: () -> Unit) {
 @Composable
 fun ShowHistory(onClose: () -> Unit) {
 
+    val myList = remember {
+        mutableStateOf(UserAndFridgeData.fridge?.fridgeHistory)
+    }
+
     PopUpTemplate(onClose = onClose) {
         Column(
             modifier = Modifier
@@ -236,9 +240,8 @@ fun ShowHistory(onClose: () -> Unit) {
                         .fillMaxHeight(0.8f)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    val myList = UserAndFridgeData.fridge?.fridgeHistory
-                    val iterator = myList?.listIterator(myList.size)
-                    while (iterator!!.hasPrevious()) {
+                    val iterator = myList.value!!.listIterator(myList.value!!.size)
+                    while (iterator.hasPrevious()) {
                         val element = iterator.previous()
                         EventLabel(event = element)
                     }

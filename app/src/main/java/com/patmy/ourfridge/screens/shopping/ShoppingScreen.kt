@@ -58,8 +58,6 @@ fun ShoppingScreen(
         mutableStateOf(UserAndFridgeData.shoppingList)
     }
 
-    println(shoppingList.value)
-
     Scaffold(scaffoldState = scaffoldState,
         topBar = {
             OurFridgeAppTopBar(screen = "shopping", onProfileClicked = {
@@ -100,14 +98,10 @@ fun ShoppingScreen(
                     onAddArticles = {
                         showAddToFridgeConfirm.value = true
                     })
-            } else {
-                Text(text = "Join or create fridge to access this screen")
             }
-
         }
         if (showArticleAddMenu.value) {
-            AddFoodMenu(
-                loading = false,
+            AddFoodMenu(loading = false,
                 onClose = { showArticleAddMenu.value = false },
                 onAdd = { article ->
                     loadingInAddArticles.value = true
@@ -119,11 +113,11 @@ fun ShoppingScreen(
         }
         if (showAddToFridgeConfirm.value) {
             AddToFridgeConfirm(onDoNotDelete = {
-                viewModel.finishShopping(false, shoppingList.value?.shoppingList!!){
+                viewModel.finishShopping(false, shoppingList.value?.shoppingList!!) {
                     showAddToFridgeConfirm.value = false
                 }
             }, onDelete = {
-                viewModel.finishShopping(true, shoppingList.value?.shoppingList!!){
+                viewModel.finishShopping(true, shoppingList.value?.shoppingList!!) {
                     showAddToFridgeConfirm.value = false
                 }
             }, onClose = {
@@ -139,7 +133,8 @@ fun AddToFridgeConfirm(onClose: () -> Unit, onDoNotDelete: () -> Unit, onDelete:
         Column(
             modifier = Modifier
                 .padding(10.dp)
-                .fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             AddToFridgeConfirmText(text = "You will add all checked articles to the fridge.")
             Spacer(modifier = Modifier.height(5.dp))
@@ -163,16 +158,21 @@ fun AddToFridgeConfirm(onClose: () -> Unit, onDoNotDelete: () -> Unit, onDelete:
         }
     }
 }
+
 @Composable
 fun AddToFridgeConfirmText(text: String) {
-    Text(text = text, modifier = Modifier.padding(horizontal = 5.dp), textAlign = TextAlign.Center, color = MaterialTheme.colors.primaryVariant)
+    Text(
+        text = text,
+        modifier = Modifier.padding(horizontal = 5.dp),
+        textAlign = TextAlign.Center,
+        color = MaterialTheme.colors.primaryVariant
+    )
 }
+
 @Composable
 fun AddToFridgeConfirmButton(title: String, onClick: () -> Unit) {
     Button(
-        onClick = { onClick() },
-        modifier = Modifier,
-        colors = ButtonDefaults.buttonColors(
+        onClick = { onClick() }, modifier = Modifier, colors = ButtonDefaults.buttonColors(
             backgroundColor = MaterialTheme.colors.primary,
             contentColor = MaterialTheme.colors.primaryVariant
         )
@@ -207,7 +207,10 @@ fun ShoppingMainView(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 if (shoppingList!![0]?.id == null || shoppingList[0]?.id == "null") {
-                    ShoppingInfoText(text = "Add shopping articles using add button")
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        ShoppingInfoText(text = "Add shopping articles using add button", textAlign = TextAlign.Center)
+                    }
+
                 } else {
                     for (article in shoppingList) {
                         ArticleLabel(article, viewModel) {
@@ -257,13 +260,13 @@ fun ArticleLabel(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ShoppingInfoText(
-                    text = "${articleInfo?.title}${articleInfo?.quantity}${articleInfo?.unit}",
+                    text = "${articleInfo?.title} ${articleInfo?.quantity}${articleInfo?.unit}",
                     modifier = Modifier.fillMaxWidth(0.85f),
                     padding = 0
                 )
                 Card(
                     modifier = Modifier.size(20.dp),
-                    backgroundColor = if (!checked.value) Color(0xFF9CD857) else Color(0xFF559B05),
+                    backgroundColor = if (!checked.value) Color.Transparent else Color(0xFF7FE906),
                     shape = RoundedCornerShape(2.dp)
                 ) {
                     Icon(
@@ -290,8 +293,7 @@ fun ArticleLabel(
             imageVector = Icons.Default.Delete,
             contentDescription = "Delete",
             modifier = Modifier.clickable(
-                interactionSource = interactionSource,
-                indication = null
+                interactionSource = interactionSource, indication = null
             ) {
                 onDeleteArticle(articleInfo)
             },

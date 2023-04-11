@@ -22,14 +22,13 @@ class ShoppingScreenViewModel : ViewModel() {
 
 
     fun onAddArticle(articleToTransform: MFood, onDone: (List<MArticle?>) -> Unit) {
-        val article =
-            MArticle(
-                id = UUID.randomUUID().toString(),
-                title = articleToTransform.title,
-                quantity = articleToTransform.quantity,
-                unit = articleToTransform.unit,
-                checked = false
-            )
+        val article = MArticle(
+            id = UUID.randomUUID().toString(),
+            title = articleToTransform.title,
+            quantity = articleToTransform.quantity,
+            unit = articleToTransform.unit,
+            checked = false
+        )
 
         val shoppingListUpdate =
             if (UserAndFridgeData.shoppingList?.shoppingList!![0]?.id == null || UserAndFridgeData.shoppingList?.shoppingList!![0]?.id == "null") {
@@ -110,10 +109,12 @@ class ShoppingScreenViewModel : ViewModel() {
 
         fridgeAfterAdding!!.sortedBy { it?.title }
 
+        val eventList = articlesAdded.joinToString(separator = ", ")
+
         val newEvent = MFHistory(
             historyId = UUID.randomUUID().toString(),
             creatorId = userUId,
-            event = "${UserAndFridgeData.user?.username} added articles from shopping list: ${articlesAdded.joinToString { ", " }} $currentDateTime"
+            event = "${UserAndFridgeData.user?.username} added articles from shopping list: $eventList $currentDateTime"
         )
 
         fridgeHistoryUpdate = fridgeHistoryUpdate?.plus(newEvent)
@@ -121,7 +122,11 @@ class ShoppingScreenViewModel : ViewModel() {
         db.collection("fridges").document(adminId)
             .update("foodInside", fridgeAfterAdding, "fridgeHistory", fridgeHistoryUpdate)
             .addOnSuccessListener {
-                UserAndFridgeData.fridge?.foodInside = fridgeAfterAdding
+                UserAndFridgeData.fridge?.apply {
+                    this.fridgeHistory = fridgeHistoryUpdate!!
+                    this.foodInside = fridgeAfterAdding
+                }
+
                 docRef.update("shoppingList", articleListUpdate).addOnSuccessListener {
                     UserAndFridgeData.shoppingList?.shoppingList = articleListUpdate
                     onDone()
