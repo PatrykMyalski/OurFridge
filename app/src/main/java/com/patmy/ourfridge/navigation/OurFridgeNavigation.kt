@@ -9,7 +9,7 @@ import com.patmy.ourfridge.screens.login.LoginScreen
 import com.patmy.ourfridge.screens.registration.RegistrationScreen
 import com.patmy.ourfridge.screens.shopping.ShoppingScreen
 import com.patmy.ourfridge.screens.social.SocialScreen
-import com.patmy.ourfridge.screens.splash.SplashScreen
+import com.patmy.ourfridge.screens.SplashScreen
 
 @Composable
 fun OurFridgeNavigation() {

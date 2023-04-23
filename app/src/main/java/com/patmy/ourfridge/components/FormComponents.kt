@@ -40,6 +40,7 @@ fun UserForm(
     emailAlreadyAtUse: Boolean = false,
     loading: Boolean = false,
     registration: Boolean = false,
+    onGoogleLogin: () -> Unit = {},
     onSubmit: (email: String, password: String, userName: String) -> Unit,
 ) {
 
@@ -98,7 +99,7 @@ fun UserForm(
             enabled = true,
             passwordVisibility = passwordVisibility,
             onAction = KeyboardActions {
-                passwordAgainFocusRequest.requestFocus()
+                if (registration) passwordAgainFocusRequest.requestFocus()
             })
         if (registration) {
             PasswordInput(modifier = Modifier.focusRequester(passwordAgainFocusRequest),
@@ -146,6 +147,13 @@ fun UserForm(
             }
 
         }
+
+        if (!registration){
+            Card() {
+                Text(text = "Log in using google account", modifier = Modifier.clickable { onGoogleLogin() })
+            }
+        }
+
         if (!validForm.value && registration) {
 
             if (!emailState.value.contains('@')){

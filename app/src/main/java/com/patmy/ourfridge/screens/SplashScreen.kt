@@ -1,10 +1,9 @@
-package com.patmy.ourfridge.screens.splash
+package com.patmy.ourfridge.screens
 
 
 import android.view.animation.OvershootInterpolator
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
@@ -18,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -62,12 +62,12 @@ fun SplashScreen(navController: NavController) {
             Column(modifier = Modifier.padding(1.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center) {
-                Icon(painter = painterResource(id = R.drawable.applogo),
+                Icon(painter = painterResource(id = R.drawable.ourfridge_icon),
                     contentDescription = "app logo",
                     modifier = Modifier
-                        .clip(shape = CircleShape)
-                        .clickable { },
-                    tint = MaterialTheme.colors.secondary)
+                        .size(100.dp)
+                        .clip(shape = CircleShape), tint = Color.Unspecified
+                )
                 Spacer(modifier = Modifier.height(30.dp))
                 Text(text = "OurFridge", modifier = Modifier,
                     color = MaterialTheme.colors.secondary,

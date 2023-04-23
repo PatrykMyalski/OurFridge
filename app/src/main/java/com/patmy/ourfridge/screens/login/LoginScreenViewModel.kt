@@ -5,12 +5,32 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.patmy.ourfridge.data.UserAndFridgeData
+import com.patmy.ourfridge.model.MUser
+import com.patmy.ourfridge.screens.login.googleAuth.UserData
 import kotlinx.coroutines.launch
 
 class LoginScreenViewModel : ViewModel() {
     private val auth: FirebaseAuth = Firebase.auth
 
+
+    fun signInWithGoogle(onDone: () -> Unit) {
+        val firebaseAuth = FirebaseAuth.getInstance()
+        val user = firebaseAuth.currentUser
+        val userUId = Firebase.auth.currentUser?.uid.toString()
+        val newUser = MUser(user?.email, user?.displayName)
+
+        Firebase.firestore.collection("users").document(userUId).set(newUser)
+            .addOnSuccessListener {
+                UserAndFridgeData.user = newUser
+                onDone()
+            }.addOnFailureListener {
+                Log.d("FB",
+                    "Exception occurs when setting user in firestore: $it")
+            }
+    }
 
     fun signIn(
         email: String,

@@ -214,10 +214,13 @@ fun HomeScreenView(
                             )
                         } else {
                             for (food in UserAndFridgeData.fridge!!.foodInside) {
-                                FoodLabel(food) {
+                                FoodLabel(food, onClick = {
                                     showFoodInfo.value = true
                                     foodInfo.value = food
-                                }
+                                }, onDelete = {
+                                    confirmFoodDeleting.value = true
+                                    foodToDelete.value = food
+                                })
                             }
                         }
                     }

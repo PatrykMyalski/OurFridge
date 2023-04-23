@@ -3,10 +3,11 @@ package com.patmy.ourfridge.screens.home
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,7 +24,6 @@ import com.patmy.ourfridge.components.*
 import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.model.MFHistory
 import com.patmy.ourfridge.model.MFood
-import com.patmy.ourfridge.model.radioUnits
 
 
 @Composable
@@ -42,7 +42,8 @@ fun FoodInfoView(foodData: MFood?, onClose: () -> Unit, onChange: () -> Unit) {
         Row(
             modifier = Modifier
                 .padding(vertical = 20.dp)
-                .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             FoodInfoButtons(text = "Close") { onClose() }
             FoodInfoButtons(text = "Change") { onChange() }
@@ -52,13 +53,15 @@ fun FoodInfoView(foodData: MFood?, onClose: () -> Unit, onChange: () -> Unit) {
 
 
 @Composable
-fun FoodInfoButtons(text: String, shape: RoundedCornerShape = RoundedCornerShape(5.dp), onClick: () -> Unit) {
+fun FoodInfoButtons(
+    text: String,
+    shape: RoundedCornerShape = RoundedCornerShape(5.dp),
+    onClick: () -> Unit,
+) {
     Button(
-        onClick = { onClick() },
-        modifier = Modifier
+        onClick = { onClick() }, modifier = Modifier
             .width(125.dp)
-            .height(50.dp),
-        shape = shape
+            .height(50.dp), shape = shape
     ) {
         Text(
             text = text,
@@ -118,11 +121,16 @@ fun FoodChangeView(
         mutableStateOf(false)
     }
 
+    val invalidInput = remember {
+        mutableStateOf(false)
+    }
+
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 15.dp), horizontalAlignment = Alignment.CenterHorizontally
+            .padding(vertical = 15.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "You are changing ${foodInfo?.title}.",
@@ -140,21 +148,34 @@ fun FoodChangeView(
         )
         if (inputValueToBig.value) ErrorMessage(text = "You can't take out more than you have!")
 
+        if (invalidInput.value) ErrorMessage(text = "Field is empty!")
+
         Row(modifier = Modifier.padding(top = 5.dp, bottom = 30.dp)) {
             FoodInfoButtons(text = "Take out", shape = RoundedCornerShape(15.dp)) {
-                if (quantityState.value.toInt() > foodInfo?.quantity?.toInt()!!){
-                    inputValueToBig.value = true
-                } else if (quantityState.value.toInt() == foodInfo.quantity?.toInt()!!) {
-                    inputValueToBig.value = false
-                    onDelete()
+                if (quantityState.value.isNotEmpty()) {
+                    if (quantityState.value.toInt() > foodInfo?.quantity?.toInt()!!) {
+                        inputValueToBig.value = true
+                    } else if (quantityState.value.toInt() == foodInfo.quantity?.toInt()!!) {
+                        inputValueToBig.value = false
+                        onDelete()
+                    } else {
+                        inputValueToBig.value = false
+                        onQuantityChange("-", quantityState.value)
+                    }
                 } else {
-                    inputValueToBig.value = false
-                    onQuantityChange("-", quantityState.value)
+                    invalidInput.value = true
                 }
+
             }
             Spacer(modifier = Modifier.width(20.dp))
             FoodInfoButtons(text = "Put in", shape = RoundedCornerShape(15.dp)) {
-                onQuantityChange("+", quantityState.value)
+                inputValueToBig.value = false
+                if (quantityState.value.isNotEmpty()) {
+                    onQuantityChange("+", quantityState.value)
+                } else {
+                    invalidInput.value = true
+                }
+
             }
         }
         Row {
@@ -204,19 +225,29 @@ fun ShowFoodInfo(
 }
 
 @Composable
-fun FoodLabel(food: MFood?, onClick: () -> Unit) {
+fun FoodLabel(food: MFood?, onClick: () -> Unit, onDelete: () -> Unit) {
     Column(modifier = Modifier.padding(4.dp)) {
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick.invoke() }) {
-            Text(text = food?.title.toString(), modifier = Modifier.padding(end = 18.dp))
-            Text(text = food?.quantity.toString(), modifier = Modifier.padding(end = 2.dp))
-            Text(text = food?.unit.toString())
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onClick.invoke() },
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row {
+                Text(text = food?.title.toString(), modifier = Modifier.padding(end = 18.dp))
+                Text(
+                    text = "${food?.quantity.toString()}${food?.unit.toString()}",
+                    modifier = Modifier.padding(end = 2.dp)
+                )
+            }
+            Icon(imageVector = Icons.Default.Delete,
+                contentDescription = "Delete",
+                tint = MaterialTheme.colors.secondary,
+                modifier = Modifier.clickable { onDelete() })
         }
         Divider(modifier = Modifier.fillMaxWidth(), color = Color.Black, thickness = 1.dp)
     }
 }
-
 
 
 @Composable

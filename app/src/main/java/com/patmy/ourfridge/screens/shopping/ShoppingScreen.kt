@@ -1,5 +1,6 @@
 package com.patmy.ourfridge.screens.shopping
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -15,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -171,8 +173,11 @@ fun AddToFridgeConfirmText(text: String) {
 
 @Composable
 fun AddToFridgeConfirmButton(title: String, onClick: () -> Unit) {
+
     Button(
-        onClick = { onClick() }, modifier = Modifier, colors = ButtonDefaults.buttonColors(
+        onClick = { onClick() },
+        modifier = Modifier,
+        colors = ButtonDefaults.buttonColors(
             backgroundColor = MaterialTheme.colors.primary,
             contentColor = MaterialTheme.colors.primaryVariant
         )
@@ -189,7 +194,6 @@ fun ShoppingMainView(
     onDelete: () -> Unit,
     onAddArticles: () -> Unit,
 ) {
-
 
     Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         ShoppingInfoText(text = "Our shopping list")
@@ -208,7 +212,10 @@ fun ShoppingMainView(
             ) {
                 if (shoppingList!![0]?.id == null || shoppingList[0]?.id == "null") {
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        ShoppingInfoText(text = "Add shopping articles using add button", textAlign = TextAlign.Center)
+                        ShoppingInfoText(
+                            text = "Add shopping articles using add button",
+                            textAlign = TextAlign.Center
+                        )
                     }
 
                 } else {
@@ -223,8 +230,20 @@ fun ShoppingMainView(
                 }
             }
         }
+        val context = LocalContext.current
+        val toastDuration = Toast.LENGTH_SHORT
+        val toast = Toast.makeText(
+            context,
+            "First you need to add something to shopping list",
+            toastDuration
+        )
         AddArticlesButton(loading) {
-            onAddArticles()
+            if ((shoppingList!![0]?.id == null || shoppingList[0]?.id == "null")) {
+                toast.show()
+            } else {
+                onAddArticles()
+            }
+
         }
     }
 }

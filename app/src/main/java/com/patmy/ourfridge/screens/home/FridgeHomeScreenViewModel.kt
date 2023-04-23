@@ -146,7 +146,7 @@ class FridgeHomeScreenViewModel : ViewModel() {
             historyId = UUID.randomUUID().toString(),
             foodId = food?.id,
             creatorId = userUId,
-            event = "${UserAndFridgeData.user?.username} took out ${food?.title} $currentDateTime"
+            event = "${UserAndFridgeData.user?.username} took out all of ${food?.title} $currentDateTime"
         )
 
         val historyUpdate = UserAndFridgeData.fridge?.fridgeHistory?.plus(historyEvent)
