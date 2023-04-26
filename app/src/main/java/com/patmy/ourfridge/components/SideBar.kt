@@ -20,27 +20,33 @@ fun ProfileSideBar(onClick: () -> Unit) {
     val interactionSource = MutableInteractionSource()
 
     Card(modifier = Modifier.fillMaxSize(), backgroundColor = MaterialTheme.colors.background) {
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 30.dp),
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 30.dp),
             verticalArrangement = Arrangement.Bottom,
-            horizontalAlignment = Alignment.CenterHorizontally) {
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
-            Column(modifier = Modifier
-                .clickable(interactionSource = interactionSource,
-                    indication = null) {
-                    onClick.invoke()
-                    UserAndFridgeData.clearData()
-                },
-                horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Logout",
+            Column(
+                modifier = Modifier.clickable(
+                        interactionSource = interactionSource, indication = null
+                    ) {
+                        onClick.invoke()
+                        UserAndFridgeData.clearData()
+                    }, horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Logout",
                     modifier = Modifier.padding(10.dp),
-                    color = MaterialTheme.colors.secondary)
-                Icon(imageVector = Icons.Default.Logout,
+                    color = MaterialTheme.colors.secondary
+                )
+                Icon(
+                    imageVector = Icons.Default.Logout,
                     contentDescription = "Logout",
-                    modifier = Modifier
-                        .size(35.dp),
-                    tint = MaterialTheme.colors.secondary)
+                    modifier = Modifier.size(35.dp),
+                    tint = MaterialTheme.colors.secondary
+                )
             }
         }
     }

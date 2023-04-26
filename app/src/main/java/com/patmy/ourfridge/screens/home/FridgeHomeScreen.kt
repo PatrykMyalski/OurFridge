@@ -195,8 +195,7 @@ fun HomeScreenView(
                 } else {
                     if (UserAndFridgeData.user?.fridge == null || UserAndFridgeData.user?.fridge == "null") {
                         Text(
-                            text = "Join or create fridge",
-                            modifier = Modifier.padding(2.dp),
+                            text = "Join or create fridge", modifier = Modifier.padding(2.dp),
                             color = Color.Gray
                         )
                     } else {

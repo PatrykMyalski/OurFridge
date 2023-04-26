@@ -28,44 +28,54 @@ import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.navigation.OurFridgeScreens
 
 @Composable
-fun OurFridgeAppTopBar(screen: String = "", onProfileClicked: () -> Unit = {}, onShowHistory: () -> Unit = {}) {
-    TopAppBar(
-        modifier = Modifier, backgroundColor = MaterialTheme.colors.primary,
-        title = {
-            Row(modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(text = "OurFridge", modifier = Modifier,
-                    color = MaterialTheme.colors.secondary,
-                    fontSize = 18.sp, fontWeight = FontWeight.Bold)
+fun OurFridgeAppTopBar(
+    screen: String = "",
+    onProfileClicked: () -> Unit = {},
+    onShowHistory: () -> Unit = {},
+) {
+    TopAppBar(modifier = Modifier, backgroundColor = MaterialTheme.colors.primary, title = {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "OurFridge",
+                modifier = Modifier,
+                color = MaterialTheme.colors.secondary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
 
-                if (screen == "home") {
-                    val interactionSource = remember {
-                        MutableInteractionSource()
-                    }
-                    Icon(
-                        imageVector = Icons.Default.History,
-                        contentDescription = "View History ",
-                        modifier = Modifier
-                            .size(50.dp)
-                            .clickable(interactionSource = interactionSource, indication = null) {
-                                if (UserAndFridgeData.user?.fridge != null && UserAndFridgeData.user?.fridge != "null") {
-                                    onShowHistory()
-                                }
-                            },
-                        tint = MaterialTheme.colors.primaryVariant,
-                    )
+            if (screen == "home") {
+                val interactionSource = remember {
+                    MutableInteractionSource()
                 }
+                Icon(
+                    imageVector = Icons.Default.History,
+                    contentDescription = "View History ",
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clickable(interactionSource = interactionSource, indication = null) {
+                            if (UserAndFridgeData.user?.fridge != null && UserAndFridgeData.user?.fridge != "null") {
+                                onShowHistory()
+                            }
+                        },
+                    tint = MaterialTheme.colors.primaryVariant,
+                )
             }
-        },
-        navigationIcon = {
-            Icon(painter = painterResource(id = R.drawable.profile),
-                contentDescription = "profile icon",
-                modifier = Modifier
-                    .size(50.dp)
-                    .clip(shape = CircleShape)
-                    .clickable { onProfileClicked.invoke() },
-                tint = MaterialTheme.colors.secondary)
         }
-    )
+    }, navigationIcon = {
+        Icon(
+            painter = painterResource(id = R.drawable.profile),
+            contentDescription = "profile icon",
+            modifier = Modifier
+                .size(50.dp)
+                .clip(shape = CircleShape)
+                .clickable { onProfileClicked.invoke() },
+            tint = MaterialTheme.colors.secondary
+        )
+    })
 }
 
 @Composable
@@ -76,27 +86,36 @@ fun OurFridgeAppBottomBar(
 
     BottomAppBar(modifier = Modifier, backgroundColor = MaterialTheme.colors.primary) {
         Row(modifier = Modifier.fillMaxWidth()) {
-            BottomAppBarIcon(modifier = Modifier.fillMaxWidth(0.333f),
+            BottomAppBarIcon(
+                modifier = Modifier.fillMaxWidth(0.333f),
                 title = "People",
                 icon = Icons.Default.People,
-                highlight = currentScreen == "social") {
+                highlight = currentScreen == "social"
+            ) {
                 navController.navigate(OurFridgeScreens.SocialScreen.name)
             }
-            BottomAppBarIcon(modifier = Modifier.fillMaxWidth(0.5f),
+            BottomAppBarIcon(
+                modifier = Modifier.fillMaxWidth(0.5f),
                 title = "Home",
                 icon = Icons.Default.Home,
-                highlight = currentScreen == "home") {
+                highlight = currentScreen == "home"
+            ) {
                 navController.navigate(OurFridgeScreens.FridgeHomeScreen.name)
             }
 
             // defining toast when user try to access shopping screen without fridge
             val context = LocalContext.current
             val toastDuration = Toast.LENGTH_SHORT
-            val toast = Toast.makeText(context, "Join or create fridge to access shopping list", toastDuration)
+            val toast = Toast.makeText(
+                context, "Join or create fridge to access shopping list", toastDuration
+            )
 
-            BottomAppBarIcon(modifier = Modifier.fillMaxWidth(),
+            BottomAppBarIcon(
+                modifier = Modifier.fillMaxWidth(),
                 title = "Shopping",
-                icon = Icons.Default.AddShoppingCart, highlight = currentScreen == "shopping") {
+                icon = Icons.Default.AddShoppingCart,
+                highlight = currentScreen == "shopping"
+            ) {
                 if (UserAndFridgeData.fridge != null) {
                     navController.navigate(OurFridgeScreens.ShoppingScreen.name)
                 } else {
@@ -122,20 +141,28 @@ fun BottomAppBarIcon(
         MaterialTheme.colors.primary
     }
 
-    Card(modifier = modifier,
+    Card(
+        modifier = modifier,
         backgroundColor = backgroundColor,
-        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)) {
-        Column(modifier = Modifier.clickable { onClick.invoke() },
+        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
+    ) {
+        Column(
+            modifier = Modifier.clickable { onClick.invoke() },
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(imageVector = icon,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = icon,
                 contentDescription = title,
                 modifier = Modifier.size(30.dp),
-                tint = MaterialTheme.colors.secondary)
-            Text(text = title,
+                tint = MaterialTheme.colors.secondary
+            )
+            Text(
+                text = title,
                 modifier = Modifier,
                 fontSize = 14.sp,
-                color = MaterialTheme.colors.secondary)
+                color = MaterialTheme.colors.secondary
+            )
         }
     }
 }

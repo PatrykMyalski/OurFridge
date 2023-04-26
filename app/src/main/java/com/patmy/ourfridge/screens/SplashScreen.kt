@@ -30,19 +30,20 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(navController: NavController) {
-    Column(modifier = Modifier.fillMaxSize(),
+    Column(
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center) {
+        verticalArrangement = Arrangement.Center
+    ) {
         val animationScale = remember {
             androidx.compose.animation.core.Animatable(0f)
         }
         LaunchedEffect(key1 = true) {
-            animationScale.animateTo(0.9f,
-                animationSpec = tween(durationMillis = 1000,
-                    easing = {
-                        OvershootInterpolator(8f)
-                            .getInterpolation(it)
-                    }))
+            animationScale.animateTo(
+                0.9f, animationSpec = tween(durationMillis = 1000, easing = {
+                    OvershootInterpolator(8f).getInterpolation(it)
+                })
+            )
             delay(1800L)
             if (FirebaseAuth.getInstance().currentUser?.email.isNullOrEmpty()) {
                 navController.navigate(OurFridgeScreens.LoginScreen.name)
@@ -51,30 +52,44 @@ fun SplashScreen(navController: NavController) {
             }
         }
 
-        Surface(modifier = Modifier
-            .size(330.dp)
-            .padding(15.dp)
-            .scale(animationScale.value),
+        Surface(
+            modifier = Modifier
+                .size(330.dp)
+                .padding(15.dp)
+                .scale(animationScale.value),
             shape = CircleShape,
             color = MaterialTheme.colors.primary,
-            border = BorderStroke(width = 2.dp,
-                color = MaterialTheme.colors.secondary)) {
-            Column(modifier = Modifier.padding(1.dp),
+            border = BorderStroke(
+                width = 2.dp, color = MaterialTheme.colors.secondary
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(1.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center) {
-                Icon(painter = painterResource(id = R.drawable.ourfridge_icon),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ourfridge_icon),
                     contentDescription = "app logo",
                     modifier = Modifier
                         .size(100.dp)
-                        .clip(shape = CircleShape), tint = Color.Unspecified
+                        .clip(shape = CircleShape),
+                    tint = Color.Unspecified
                 )
                 Spacer(modifier = Modifier.height(30.dp))
-                Text(text = "OurFridge", modifier = Modifier,
+                Text(
+                    text = "OurFridge",
+                    modifier = Modifier,
                     color = MaterialTheme.colors.secondary,
-                    fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
                 Spacer(modifier = Modifier.height(15.dp))
-                Text(text = "\"Your fridge inside out\"",
-                    fontSize = 18.sp, color = MaterialTheme.colors.primaryVariant)
+                Text(
+                    text = "\"Your fridge inside out\"",
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colors.primaryVariant
+                )
             }
         }
     }

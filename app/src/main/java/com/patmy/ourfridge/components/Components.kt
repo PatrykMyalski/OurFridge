@@ -1,6 +1,5 @@
 package com.patmy.ourfridge.components
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -14,9 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -25,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.model.MFood
 import com.patmy.ourfridge.model.radioUnits
 
@@ -82,8 +78,7 @@ fun PopUpTemplate(onClose: () -> Unit, content: @Composable () -> Unit) {
             .fillMaxSize()
             .background(Color(0x67000000))
     ) {
-        Popup(
-            alignment = Alignment.Center,
+        Popup(alignment = Alignment.Center,
             properties = PopupProperties(),
             onDismissRequest = { onClose() }) {
             Column(
@@ -115,8 +110,7 @@ fun PopUpWithTextField(onClose: () -> Unit, content: @Composable () -> Unit) {
             Card(
                 modifier = Modifier
                     .padding(start = 30.dp, end = 30.dp, top = 100.dp)
-                    .clickable(interactionSource = interactionSource, indication = null) {
-                    },
+                    .clickable(interactionSource = interactionSource, indication = null) {},
                 backgroundColor = MaterialTheme.colors.background,
                 shape = RoundedCornerShape(10),
                 elevation = 5.dp
@@ -151,7 +145,8 @@ fun AddFoodMenuButtons(
     enabled: Boolean,
     onClick: () -> Unit,
 ) {
-    Button(onClick = { onClick.invoke() },
+    Button(
+        onClick = { onClick.invoke() },
         modifier = Modifier
             .width(130.dp)
             .height(50.dp)
@@ -159,10 +154,12 @@ fun AddFoodMenuButtons(
         elevation = elevation,
         shape = RoundedCornerShape(25),
         colors = colors,
-        enabled = enabled) {
+        enabled = enabled
+    ) {
         Text(text = title)
     }
 }
+
 @Composable
 fun AddFoodMenu(
     loading: Boolean,
@@ -203,39 +200,32 @@ fun AddFoodMenu(
                 radioUnits.forEach { text ->
                     val unit = text.displayValue
                     Row(modifier = Modifier
-                        .selectable(
+                        .selectable(selected = (unit == selectedUnit), onClick = {
+                            onUnitSelected(unit)
+                        })
+                        .padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(
                             selected = (unit == selectedUnit),
-                            onClick = {
-                                onUnitSelected(unit)
-                            }
-                        )
-                        .padding(4.dp),
-                        verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = (unit == selectedUnit),
                             onClick = { onUnitSelected(unit) })
                         Text(text = unit)
                     }
                 }
             }
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
+                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
             ) {
 
                 AddFoodMenuButtons(
-                    title = "Close",
-                    elevation = ButtonDefaults.elevation(
+                    title = "Close", elevation = ButtonDefaults.elevation(
                         defaultElevation = 5.dp,
                         pressedElevation = 3.dp,
                         disabledElevation = 0.dp,
                         hoveredElevation = 8.dp,
                         focusedElevation = 8.dp
-                    ),
-                    colors = ButtonDefaults.buttonColors(
+                    ), colors = ButtonDefaults.buttonColors(
                         backgroundColor = MaterialTheme.colors.primary,
                         contentColor = MaterialTheme.colors.primaryVariant
-                    ),
-                    enabled = true
+                    ), enabled = true
                 ) {
                     onClose()
                 }
@@ -258,11 +248,13 @@ fun AddFoodMenu(
                     enabled = foodTitleState.value.trim()
                         .isNotEmpty() && foodQuantityState.value.trim().isNotEmpty()
                 ) {
-                    onAdd(MFood(
-                        title = foodTitleState.value,
-                        quantity = foodQuantityState.value,
-                        unit = selectedUnit
-                    ))
+                    onAdd(
+                        MFood(
+                            title = foodTitleState.value,
+                            quantity = foodQuantityState.value,
+                            unit = selectedUnit
+                        )
+                    )
                     if (!loading) {
                         onClose()
                     }

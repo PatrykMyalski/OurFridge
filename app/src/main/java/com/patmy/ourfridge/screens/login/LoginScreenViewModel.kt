@@ -9,7 +9,6 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.model.MUser
-import com.patmy.ourfridge.screens.login.googleAuth.UserData
 import kotlinx.coroutines.launch
 
 class LoginScreenViewModel : ViewModel() {
@@ -22,13 +21,13 @@ class LoginScreenViewModel : ViewModel() {
         val userUId = Firebase.auth.currentUser?.uid.toString()
         val newUser = MUser(user?.email, user?.displayName)
 
-        Firebase.firestore.collection("users").document(userUId).set(newUser)
-            .addOnSuccessListener {
+        Firebase.firestore.collection("users").document(userUId).set(newUser).addOnSuccessListener {
                 UserAndFridgeData.user = newUser
                 onDone()
             }.addOnFailureListener {
-                Log.d("FB",
-                    "Exception occurs when setting user in firestore: $it")
+                Log.d(
+                    "FB", "Exception occurs when setting user in firestore: $it"
+                )
             }
     }
 
@@ -42,8 +41,7 @@ class LoginScreenViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 changeLoadingValue(true)
-                auth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener { task ->
+                auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             Log.d("FB", "signIn Successful: ${task.result}")
                             changeLoadingValue(false)

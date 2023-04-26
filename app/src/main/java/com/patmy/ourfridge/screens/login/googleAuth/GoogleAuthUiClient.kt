@@ -14,20 +14,20 @@ import kotlinx.coroutines.tasks.await
 import java.util.concurrent.CancellationException
 
 
-class GoogleAuthUiClient (
+class GoogleAuthUiClient(
     private val context: Context,
-    private val oneTapClient: SignInClient
-        ){
+    private val oneTapClient: SignInClient,
+) {
 
     private val auth = Firebase.auth
-    suspend fun signIn(): IntentSender?{
+    suspend fun signIn(): IntentSender? {
         val result = try {
             oneTapClient.beginSignIn(
                 buildSignInRequest()
             ).await()
         } catch (e: Exception) {
             e.printStackTrace()
-            if(e is CancellationException) throw  e
+            if (e is CancellationException) throw e
             null
         }
         return result?.pendingIntent?.intentSender
@@ -38,33 +38,31 @@ class GoogleAuthUiClient (
         val googleIdToken = credential.googleIdToken
         val googleCredentials = GoogleAuthProvider.getCredential(googleIdToken, null)
 
-        return try{
+        return try {
             val user = auth.signInWithCredential(googleCredentials).await().user
             SignInResult(
                 data = user?.run {
                     UserData(
                         userId = uid,
-                        username =  displayName,
+                        username = displayName,
                         profilePictureUrl = photoUrl?.toString()
                     )
-                },
-                errorMassage = null
+                }, errorMassage = null
             )
         } catch (e: Exception) {
             e.printStackTrace()
-            if(e is CancellationException) throw  e
+            if (e is CancellationException) throw e
             SignInResult(
-                data = null,
-                errorMassage = e.message
+                data = null, errorMassage = e.message
             )
         }
     }
 
-    suspend fun signOut(){
+    suspend fun signOut() {
         try {
             oneTapClient.signOut().await()
             auth.signOut()
-        } catch (e: Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
             if (e is CancellationException) throw e
         }
@@ -72,19 +70,16 @@ class GoogleAuthUiClient (
 
     fun getSignedInUser(): UserData? = auth.currentUser?.run {
         UserData(
-            userId = uid,
-            username = displayName,
-            profilePictureUrl = photoUrl?.toString()
-        ) }
+            userId = uid, username = displayName, profilePictureUrl = photoUrl?.toString()
+        )
+    }
 
     private fun buildSignInRequest(): BeginSignInRequest {
-        return BeginSignInRequest.builder()
-            .setGoogleIdTokenRequestOptions(
+        return BeginSignInRequest.builder().setGoogleIdTokenRequestOptions(
                 GoogleIdTokenRequestOptions.builder()
                     .setSupported(true) // zaznaczamy że ten sposób authentykacji jest prawidłowy
                     .setFilterByAuthorizedAccounts(false) // jeżeli damy na true wtedy będzie odrazu logowało na ostatnie zalogowene konto googla, a tak będziemy mieli zawsze pełna liste naszych kont
-                    .setServerClientId(context.getString(R.string.web_client_id))
-                    .build()
+                    .setServerClientId(context.getString(R.string.web_client_id)).build()
             )
             .setAutoSelectEnabled(true) // jeżeli user ma tylko jedno konto google odrazu będzie logowany na nie
             .build()

@@ -24,16 +24,17 @@ class FridgeHomeScreenViewModel : ViewModel() {
                 db.collection("fridges").document(currentUser.fridge.toString()).get()
                     .addOnSuccessListener { fridgeData ->
                         val currentFridge = fridgeData.toObject<MFridge>()
-                        db.collection("shopping_lists").document(currentFridge!!.fridgeUsers[0]?.fridge.toString()).get().addOnSuccessListener {shoppingListData ->
-                            val currentShoppingList = shoppingListData.toObject<MShoppingList>()
-                            UserAndFridgeData.shoppingList = currentShoppingList
-                            onDone(currentUser, currentFridge)
-                        }
+                        db.collection("shopping_lists")
+                            .document(currentFridge!!.fridgeUsers[0]?.fridge.toString()).get()
+                            .addOnSuccessListener { shoppingListData ->
+                                val currentShoppingList = shoppingListData.toObject<MShoppingList>()
+                                UserAndFridgeData.shoppingList = currentShoppingList
+                                onDone(currentUser, currentFridge)
+                            }
 
                     }.addOnFailureListener {
                         Log.d(
-                            "FB",
-                            "Exception occurs when tries to get fridge data: $it"
+                            "FB", "Exception occurs when tries to get fridge data: $it"
                         )
                     }
             } else {
@@ -71,16 +72,15 @@ class FridgeHomeScreenViewModel : ViewModel() {
 
         db.collection("fridges").document(userUId).set(newFridge).addOnSuccessListener {
             db.collection("users").document(userUId)
-                .update("fridge", userUId, "role", currentUser?.role)
-                .addOnSuccessListener {
-                    db.collection("shopping_lists").document(userUId).set(newShoppingList).addOnSuccessListener {
-                        onFridgeCreated(newFridge, currentUser)
-                        UserAndFridgeData.shoppingList = newShoppingList
-                    }
+                .update("fridge", userUId, "role", currentUser?.role).addOnSuccessListener {
+                    db.collection("shopping_lists").document(userUId).set(newShoppingList)
+                        .addOnSuccessListener {
+                            onFridgeCreated(newFridge, currentUser)
+                            UserAndFridgeData.shoppingList = newShoppingList
+                        }
                 }.addOnFailureListener {
                     Log.d(
-                        "FB",
-                        "Exception occurs when updating fridgeId in User data: $it"
+                        "FB", "Exception occurs when updating fridgeId in User data: $it"
                     )
                 }
 
@@ -125,8 +125,7 @@ class FridgeHomeScreenViewModel : ViewModel() {
                 onFoodAdded(fridge)
             }.addOnFailureListener {
                 Log.d(
-                    "FB",
-                    "Exception occurs during adding food to fridge: $it"
+                    "FB", "Exception occurs during adding food to fridge: $it"
                 )
             }
     }
@@ -154,8 +153,7 @@ class FridgeHomeScreenViewModel : ViewModel() {
         val fridgeUId = UserAndFridgeData.fridge!!.fridgeUsers[0]?.fridge!!
 
         db.collection("fridges").document(fridgeUId)
-            .update("foodInside", newArray, "fridgeHistory", historyUpdate)
-            .addOnSuccessListener {
+            .update("foodInside", newArray, "fridgeHistory", historyUpdate).addOnSuccessListener {
                 val updateFridge = UserAndFridgeData.fridge
                 updateFridge?.fridgeHistory = historyUpdate!!
                 updateFridge?.foodInside = newArray!!
@@ -170,9 +168,8 @@ class FridgeHomeScreenViewModel : ViewModel() {
 
         val index = UserAndFridgeData.fridge?.foodInside?.indexOfFirst { it == food }
 
-        val newQuantity =
-            if (action == "-") food?.quantity!!.toInt() - quantity.toInt()
-            else food?.quantity!!.toInt() + quantity.toInt()
+        val newQuantity = if (action == "-") food?.quantity!!.toInt() - quantity.toInt()
+        else food?.quantity!!.toInt() + quantity.toInt()
 
         UserAndFridgeData.fridge?.foodInside!![index!!]?.quantity = newQuantity.toString()
 
@@ -192,8 +189,7 @@ class FridgeHomeScreenViewModel : ViewModel() {
 
         UserAndFridgeData.fridge?.fridgeHistory?.plus(historyEvent)
 
-        db.collection("fridges").document(fridgeUId)
-            .update(
+        db.collection("fridges").document(fridgeUId).update(
                 "foodInside",
                 UserAndFridgeData.fridge?.foodInside,
                 "fridgeHistory",

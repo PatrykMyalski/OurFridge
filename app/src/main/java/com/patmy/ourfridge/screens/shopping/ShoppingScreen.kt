@@ -25,7 +25,6 @@ import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.components.*
 import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.model.MArticle
-import com.patmy.ourfridge.model.MShoppingList
 import com.patmy.ourfridge.navigation.OurFridgeScreens
 import kotlinx.coroutines.launch
 
@@ -175,9 +174,7 @@ fun AddToFridgeConfirmText(text: String) {
 fun AddToFridgeConfirmButton(title: String, onClick: () -> Unit) {
 
     Button(
-        onClick = { onClick() },
-        modifier = Modifier,
-        colors = ButtonDefaults.buttonColors(
+        onClick = { onClick() }, modifier = Modifier, colors = ButtonDefaults.buttonColors(
             backgroundColor = MaterialTheme.colors.primary,
             contentColor = MaterialTheme.colors.primaryVariant
         )
@@ -233,9 +230,7 @@ fun ShoppingMainView(
         val context = LocalContext.current
         val toastDuration = Toast.LENGTH_SHORT
         val toast = Toast.makeText(
-            context,
-            "First you need to add something to shopping list",
-            toastDuration
+            context, "First you need to add something to shopping list", toastDuration
         )
         AddArticlesButton(loading) {
             if ((shoppingList!![0]?.id == null || shoppingList[0]?.id == "null")) {

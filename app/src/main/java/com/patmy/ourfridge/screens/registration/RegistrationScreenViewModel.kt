@@ -27,8 +27,7 @@ class RegistrationScreenViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 changeLoadingValue()
-                auth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener { task ->
+                auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
                         loading.value = true
                         if (task.isSuccessful) {
                             Log.d("FB", "signUp Successful: ${task.result}")
@@ -39,9 +38,10 @@ class RegistrationScreenViewModel : ViewModel() {
                                 .addOnSuccessListener {
                                     Log.d("FB", "User successfully created in firestore")
                                 }.addOnFailureListener {
-                                Log.d("FB",
-                                    "Exception occurs when setting user in firestore: $it")
-                            }
+                                    Log.d(
+                                        "FB", "Exception occurs when setting user in firestore: $it"
+                                    )
+                                }
                             changeLoadingValue()
                             toHome()
                         } else {

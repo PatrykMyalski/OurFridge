@@ -1,6 +1,5 @@
 package com.patmy.ourfridge.screens.login
 
-import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -25,11 +24,7 @@ import com.patmy.ourfridge.screens.login.googleAuth.SignInState
 import com.patmy.ourfridge.screens.login.googleAuth.SignInViewModel
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.FirebaseAuth
 import com.patmy.ourfridge.screens.login.googleAuth.GoogleAuthUiClient
-import com.patmy.ourfridge.screens.login.googleAuth.UserData
 import kotlinx.coroutines.launch
 
 
@@ -53,21 +48,21 @@ fun LoginScreen(navController: NavController, viewModel: LoginScreenViewModel = 
         )
     }
 
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartIntentSenderForResult(),
-        onResult = { result ->
-            if (result.resultCode == RESULT_OK) {
+    val launcher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartIntentSenderForResult(),
+            onResult = { result ->
+                if (result.resultCode == RESULT_OK) {
 
-                scope.launch(lifecycleOwner.lifecycleScope.coroutineContext) {
-                    val signInResult = googleAuthUiClient.signInWithIntent(
-                        intent = result.data ?: return@launch
-                    )
-                    gViewModel.onSignInResult(signInResult)
+                    scope.launch(lifecycleOwner.lifecycleScope.coroutineContext) {
+                        val signInResult = googleAuthUiClient.signInWithIntent(
+                            intent = result.data ?: return@launch
+                        )
+                        gViewModel.onSignInResult(signInResult)
+                    }
+
                 }
 
-            }
-
-        })
+            })
 
 
     val userNotFound = remember {
@@ -83,13 +78,13 @@ fun LoginScreen(navController: NavController, viewModel: LoginScreenViewModel = 
 
 
     LaunchedEffect(key1 = state.isSignInSuccessful) {
-        if(state.isSignInSuccessful){
+        if (state.isSignInSuccessful) {
             viewModel.signInWithGoogle {
                 navController.navigate(OurFridgeScreens.FridgeHomeScreen.name)
             }
         }
     }
-    
+
 
     Scaffold(topBar = { OurFridgeAppTopBar() }) {
         Surface(
@@ -100,9 +95,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginScreenViewModel = 
             LaunchedEffect(key1 = singInState.value.signInError) {
                 singInState.value.signInError?.let { error ->
                     Toast.makeText(
-                        context,
-                        error,
-                        Toast.LENGTH_SHORT
+                        context, error, Toast.LENGTH_SHORT
                     ).show()
                 }
             }
@@ -128,56 +121,3 @@ fun LoginScreen(navController: NavController, viewModel: LoginScreenViewModel = 
         }
     }
 }
-
-/*@Composable
-fun LoginScreen(navController: NavController, viewModel: LoginScreenViewModel = viewModel()) {
-    val userNotFound = remember {
-        mutableStateOf(false)
-    }
-    val loadingValue = remember {
-        mutableStateOf(false)
-    }
-
-    val context = LocalContext.current
-    val googleSignInClient = remember {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("195580127662-k43k3g1timgdsvogovhmna9dhamq21e6.apps.googleusercontent.com")
-            .requestEmail()
-            .build()
-        GoogleSignIn.getClient(context, gso)
-    }
-
-    val firebaseAuth = FirebaseAuth.getInstance()
-
-    LaunchedEffect(key1 = firebaseAuth.currentUser) {
-        println(firebaseAuth.currentUser)
-        if (firebaseAuth.currentUser != null) {
-            viewModel.signInWithGoogle{
-                navController.navigate(OurFridgeScreens.FridgeHomeScreen.name)
-            }
-        }
-    }
-
-    Scaffold(topBar = { OurFridgeAppTopBar() }) {
-        Surface(modifier = Modifier
-            .fillMaxSize()
-            .padding(it), color = MaterialTheme.colors.background) {
-            UserForm(navController,
-                userNotFound = userNotFound.value,
-                loading = loadingValue.value,
-                onGoogleLogin = {
-                    val signInIntent = googleSignInClient.signInIntent
-                    (context as? Activity)?.startActivityForResult(signInIntent, RC_SIGN_IN)
-                }
-            ) { email: String, password: String, username: String ->
-                viewModel.signIn(email,
-                    password,
-                    toHome = { navController.navigate(OurFridgeScreens.FridgeHomeScreen.name) },
-                    userNotFound = { userNotFound.value = true },
-                    changeLoadingValue = { loadingValue.value = it })
-            }
-        }
-    }
-}
-
-private const val RC_SIGN_IN = 9001*/

@@ -20,7 +20,9 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -29,6 +31,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.patmy.ourfridge.R
 import com.patmy.ourfridge.navigation.OurFridgeScreens
 
 
@@ -60,10 +63,9 @@ fun UserForm(
         val passwordFocusRequest = remember { FocusRequester() }
         val passwordAgainFocusRequest = remember { FocusRequester() }
         val keyboardController = LocalSoftwareKeyboardController.current
-        val valid = remember(emailState.value,
-            passwordState.value,
-            passwordAgainState.value,
-            userNameState.value) {
+        val valid = remember(
+            emailState.value, passwordState.value, passwordAgainState.value, userNameState.value
+        ) {
             if (registration) {
                 emailState.value.trim().isNotEmpty() && passwordState.value.trim()
                     .isNotEmpty() && passwordAgainState.value.trim()
@@ -102,20 +104,24 @@ fun UserForm(
                 if (registration) passwordAgainFocusRequest.requestFocus()
             })
         if (registration) {
-            PasswordInput(modifier = Modifier.focusRequester(passwordAgainFocusRequest),
+            PasswordInput(
+                modifier = Modifier.focusRequester(passwordAgainFocusRequest),
                 passwordState = passwordAgainState,
                 label = "Reply Password",
                 enabled = true,
                 passwordVisibility = passwordVisibility,
-                passwordReply = registration)
+                passwordReply = registration
+            )
         }
 
 
         if (!samePasswords.value) {
-            Text(text = "Passwords are not the same!",
+            Text(
+                text = "Passwords are not the same!",
                 modifier = Modifier.padding(top = 10.dp),
                 fontSize = 16.sp,
-                color = MaterialTheme.colors.error)
+                color = MaterialTheme.colors.error
+            )
         }
 
         SubmitButton(title = if (registration) "Register" else "Login", loading, valid) {
@@ -136,30 +142,47 @@ fun UserForm(
         Row(modifier = Modifier.padding(top = 5.dp)) {
             if (registration) {
                 Text(text = "Already have account?")
-                Text(text = " Sign In",
+                Text(
+                    text = " Sign In",
                     modifier = Modifier.clickable { navController.navigate(OurFridgeScreens.LoginScreen.name) },
-                    color = MaterialTheme.colors.primaryVariant)
+                    color = MaterialTheme.colors.primaryVariant
+                )
             } else {
                 Text(text = "Your first time using app?")
-                Text(text = " Sign Up",
+                Text(
+                    text = " Sign Up",
                     modifier = Modifier.clickable { navController.navigate(OurFridgeScreens.RegistrationScreen.name) },
-                    color = MaterialTheme.colors.primaryVariant)
+                    color = MaterialTheme.colors.primaryVariant
+                )
             }
 
         }
 
-        if (!registration){
-            Card() {
-                Text(text = "Log in using google account", modifier = Modifier.clickable { onGoogleLogin() })
+        if (!registration) {
+            Card(
+                modifier = Modifier.padding(top = 10.dp),
+                shape = CircleShape,
+                backgroundColor = Color.Transparent,
+                elevation = 0.dp
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.google),
+                    "Login with google",
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable { onGoogleLogin() },
+                    tint = Color.Unspecified
+                )
             }
+
         }
 
         if (!validForm.value && registration) {
 
-            if (!emailState.value.contains('@')){
+            if (!emailState.value.contains('@')) {
                 ErrorMessage(text = "Email must include @!")
             }
-            if (passwordState.value.length < 6){
+            if (passwordState.value.length < 6) {
                 ErrorMessage(text = "Password must be at least 6 characters!")
             }
 
@@ -175,7 +198,8 @@ fun UserForm(
 
 @Composable
 fun SubmitButton(title: String, loading: Boolean, validInputs: Boolean, onClick: () -> Unit) {
-    Button(onClick = onClick,
+    Button(
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 20.dp, start = 40.dp, end = 40.dp),
@@ -185,9 +209,13 @@ fun SubmitButton(title: String, loading: Boolean, validInputs: Boolean, onClick:
             backgroundColor = MaterialTheme.colors.primary,
             contentColor = MaterialTheme.colors.primaryVariant,
             disabledBackgroundColor = MaterialTheme.colors.primary,
-            disabledContentColor = MaterialTheme.colors.background)) {
+            disabledContentColor = MaterialTheme.colors.background
+        )
+    ) {
         if (loading) {
-            CircularProgressIndicator(modifier = Modifier, color = MaterialTheme.colors.primaryVariant)
+            CircularProgressIndicator(
+                modifier = Modifier, color = MaterialTheme.colors.primaryVariant
+            )
         } else Text(text = title, modifier = Modifier, fontSize = 20.sp)
     }
 }
@@ -203,8 +231,8 @@ fun PasswordInput(
     imeAction: ImeAction = ImeAction.Done,
     onAction: KeyboardActions = KeyboardActions.Default,
 ) {
-    val visualTransformation = if (passwordVisibility.value) VisualTransformation.None else
-        PasswordVisualTransformation()
+    val visualTransformation =
+        if (passwordVisibility.value) VisualTransformation.None else PasswordVisualTransformation()
     OutlinedTextField(value = passwordState.value,
         onValueChange = {
             passwordState.value = it
@@ -224,8 +252,8 @@ fun PasswordInput(
             cursorColor = MaterialTheme.colors.primaryVariant
         ),
         keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Password,
-            imeAction = imeAction),
+            keyboardType = KeyboardType.Password, imeAction = imeAction
+        ),
         visualTransformation = visualTransformation,
         trailingIcon = { if (!passwordReply) PasswordVisibility(passwordVisibility = passwordVisibility) },
         keyboardActions = onAction
@@ -235,10 +263,12 @@ fun PasswordInput(
 @Composable
 fun PasswordVisibility(passwordVisibility: MutableState<Boolean>) {
     val visible = passwordVisibility.value
-    Icon(imageVector = Icons.Default.Visibility,
+    Icon(
+        imageVector = Icons.Default.Visibility,
         contentDescription = "change visibility",
         modifier = Modifier.clickable { passwordVisibility.value = !visible },
-        tint = MaterialTheme.colors.primaryVariant)
+        tint = MaterialTheme.colors.primaryVariant
+    )
 }
 
 
@@ -251,11 +281,13 @@ fun EmailInput(
     imeAction: ImeAction = ImeAction.Next,
     onAction: KeyboardActions,
 ) {
-    InputField(modifier = modifier,
+    InputField(
+        modifier = modifier,
         valueState = emailState,
         label = label,
         enabled = enabled,
         keyboardType = KeyboardType.Email,
         imeAction = imeAction,
-        onAction = onAction)
+        onAction = onAction
+    )
 }

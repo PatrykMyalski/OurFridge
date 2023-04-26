@@ -1,7 +1,6 @@
 package com.patmy.ourfridge
 
 import android.os.Bundle
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -22,8 +21,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             OurFridgeTheme {
                 // A surface container using the 'background' color from the theme
-                Surface(modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background
+                ) {
                     OurFridgeApp()
                 }
             }
@@ -33,10 +33,13 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun OurFridgeApp() {
-    Surface(modifier = Modifier,
-        color = MaterialTheme.colors.background) {
-        Column(verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally) {
+    Surface(
+        modifier = Modifier, color = MaterialTheme.colors.background
+    ) {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             OurFridgeNavigation()
         }
 

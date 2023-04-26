@@ -28,14 +28,21 @@ fun RegistrationScreen(
         mutableStateOf(false)
     }
 
-    Scaffold(topBar = { OurFridgeAppTopBar() })
-    {
-        Surface(modifier = Modifier.fillMaxSize().padding(it), color = MaterialTheme.colors.background) {
-            UserForm(navController,
+    Scaffold(topBar = { OurFridgeAppTopBar() }) {
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it), color = MaterialTheme.colors.background
+        ) {
+            UserForm(
+                navController,
                 registration = true,
                 emailAlreadyAtUse = emailAlreadyAtUse.value,
-                loading = loadingValue.value) { email: String, password: String, username: String ->
-                viewModel.signUp(email = email, password = password, username = username,
+                loading = loadingValue.value
+            ) { email: String, password: String, username: String ->
+                viewModel.signUp(email = email,
+                    password = password,
+                    username = username,
                     toHome = { navController.navigate(OurFridgeScreens.FridgeHomeScreen.name) },
                     emailAlreadyAtUse = { emailAlreadyAtUse.value = true },
                     changeLoadingValue = { loadingValue.value = !loadingValue.value })
