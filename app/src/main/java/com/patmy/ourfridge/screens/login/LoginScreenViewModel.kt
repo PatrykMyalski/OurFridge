@@ -21,14 +21,25 @@ class LoginScreenViewModel : ViewModel() {
         val userUId = Firebase.auth.currentUser?.uid.toString()
         val newUser = MUser(user?.email, user?.displayName)
 
-        Firebase.firestore.collection("users").document(userUId).set(newUser).addOnSuccessListener {
-                UserAndFridgeData.user = newUser
-                onDone()
-            }.addOnFailureListener {
-                Log.d(
-                    "FB", "Exception occurs when setting user in firestore: $it"
-                )
-            }
+        Firebase.firestore.collection("users").document(userUId).get().addOnCompleteListener {
+
+            val result = it.result.data
+
+
+            if (result == null) {
+                Firebase.firestore.collection("users").document(userUId).set(newUser)
+                    .addOnSuccessListener {
+                        onDone()
+                    }.addOnFailureListener { e ->
+                        Log.d(
+                            "FB", "Exception occurs when setting user in firestore: $e"
+                        )
+                    }
+            } else onDone()
+
+        }
+
+
     }
 
     fun signIn(
@@ -42,18 +53,18 @@ class LoginScreenViewModel : ViewModel() {
             try {
                 changeLoadingValue(true)
                 auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Log.d("FB", "signIn Successful: ${task.result}")
-                            changeLoadingValue(false)
-                            toHome()
-                        } else {
-                            Log.d("FB", "signIn unsuccessful: ${task.exception}")
-                            changeLoadingValue(false)
-                            userNotFound()
-                        }
-                    }.addOnFailureListener {
+                    if (task.isSuccessful) {
+                        Log.d("FB", "signIn Successful: ${task.result}")
                         changeLoadingValue(false)
+                        toHome()
+                    } else {
+                        Log.d("FB", "signIn unsuccessful: ${task.exception}")
+                        changeLoadingValue(false)
+                        userNotFound()
                     }
+                }.addOnFailureListener {
+                    changeLoadingValue(false)
+                }
             } catch (e: Exception) {
                 changeLoadingValue(false)
             }

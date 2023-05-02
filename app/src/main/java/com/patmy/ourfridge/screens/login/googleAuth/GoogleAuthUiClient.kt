@@ -78,7 +78,7 @@ class GoogleAuthUiClient(
         return BeginSignInRequest.builder().setGoogleIdTokenRequestOptions(
                 GoogleIdTokenRequestOptions.builder()
                     .setSupported(true) // zaznaczamy że ten sposób authentykacji jest prawidłowy
-                    .setFilterByAuthorizedAccounts(false) // jeżeli damy na true wtedy będzie odrazu logowało na ostatnie zalogowene konto googla, a tak będziemy mieli zawsze pełna liste naszych kont
+                    .setFilterByAuthorizedAccounts(true) // jeżeli damy na true wtedy będzie odrazu logowało na ostatnie zalogowene konto googla, a tak będziemy mieli zawsze pełna liste naszych kont
                     .setServerClientId(context.getString(R.string.web_client_id)).build()
             )
             .setAutoSelectEnabled(true) // jeżeli user ma tylko jedno konto google odrazu będzie logowany na nie
