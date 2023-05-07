@@ -21,6 +21,7 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.components.*
+import com.patmy.ourfridge.components.sideBar.ProfileSideBar
 import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.model.MFood
 import com.patmy.ourfridge.navigation.OurFridgeScreens
@@ -75,26 +76,23 @@ fun FridgeHomeScreen(
     }
 
 
-    Scaffold(scaffoldState = scaffoldState,
-        topBar = {
-            OurFridgeAppTopBar(screen = "home", onProfileClicked = {
-                scope.launch { scaffoldState.drawerState.open() }
-            }, onShowHistory = {
-                showHistory.value = true
-            })
-        },
-        drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
-        drawerContent = {
-            ProfileSideBar {
-                loggingOut.value = true
-                Firebase.auth.signOut()
-                navController.navigate(OurFridgeScreens.LoginScreen.name)
-            }
-        },
-        backgroundColor = MaterialTheme.colors.background,
-        bottomBar = {
-            OurFridgeAppBottomBar(navController, currentScreen = "home")
-        }) {
+    Scaffold(scaffoldState = scaffoldState, topBar = {
+        OurFridgeAppTopBar(screen = "home", onProfileClicked = {
+            scope.launch { scaffoldState.drawerState.open() }
+        }, onShowHistory = {
+            showHistory.value = true
+        })
+    }, drawerGesturesEnabled = scaffoldState.drawerState.isOpen, drawerContent = {
+        ProfileSideBar(onLogout = {
+            loggingOut.value = true
+            Firebase.auth.signOut()
+            navController.navigate(OurFridgeScreens.LoginScreen.name)
+        }, onSettingChanged = { scope.launch { scaffoldState.drawerState.close() } },
+            onAccountDelete = { navController.navigate(OurFridgeScreens.LoginScreen.name)})
+
+    }, backgroundColor = MaterialTheme.colors.background, bottomBar = {
+        OurFridgeAppBottomBar(navController, currentScreen = "home")
+    }) {
         Box(modifier = Modifier.padding(it)) {
             if (loadingData.value) {
                 Column(
@@ -105,8 +103,7 @@ fun FridgeHomeScreen(
                     CircularProgressIndicator(color = MaterialTheme.colors.secondary)
                 }
             } else {
-                HomeScreenView(
-                    showHistory = showHistory.value,
+                HomeScreenView(showHistory = showHistory.value,
                     loadingFridge = loadingFridge.value,
                     loadingInAddFoodForm = loadingInAddFoodForm.value,
                     viewModel = viewModel,
@@ -121,9 +118,7 @@ fun FridgeHomeScreen(
                     onAddFoodToFridge = { food ->
                         loadingInAddFoodForm.value = true
                         viewModel.addFoodToFridge(
-                            food,
-                            UserAndFridgeData.user,
-                            UserAndFridgeData.fridge!!
+                            food, UserAndFridgeData.user, UserAndFridgeData.fridge!!
                         ) { updatedFridge ->
                             UserAndFridgeData.setData(updateFridge = updatedFridge)
                             loadingInAddFoodForm.value = false
@@ -131,8 +126,7 @@ fun FridgeHomeScreen(
                     },
                     onCloseHistory = {
                         showHistory.value = false
-                    }
-                )
+                    })
             }
         }
     }
@@ -169,13 +163,13 @@ fun HomeScreenView(
 
 
     Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "What is in your fridge?",
             modifier = Modifier.padding(top = 10.dp),
-            fontSize = 20.sp, color = MaterialTheme.colors.primaryVariant
+            fontSize = 20.sp,
+            color = MaterialTheme.colors.primaryVariant
         )
         Card(
             modifier = Modifier
@@ -195,7 +189,8 @@ fun HomeScreenView(
                 } else {
                     if (UserAndFridgeData.user?.fridge == null || UserAndFridgeData.user?.fridge == "null") {
                         Text(
-                            text = "Join or create fridge", modifier = Modifier.padding(2.dp),
+                            text = "Join or create fridge",
+                            modifier = Modifier.padding(2.dp),
                             color = Color.Gray
                         )
                     } else {
@@ -228,8 +223,7 @@ fun HomeScreenView(
         }
         if (UserAndFridgeData.user?.fridge == null || UserAndFridgeData.user?.fridge == "null") {
             Row(
-                modifier = Modifier.width(340.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                modifier = Modifier.width(340.dp), horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 JoinOrCreateFridgeButtons(title = "Join fridge") {
                     onJoinFridge()
@@ -241,7 +235,8 @@ fun HomeScreenView(
         } else {
             val context = LocalContext.current
             val toastDuration = Toast.LENGTH_SHORT
-            val toast = Toast.makeText(context, "As children you are not able to add food", toastDuration)
+            val toast =
+                Toast.makeText(context, "As children you are not able to add food", toastDuration)
             Card(
                 modifier = Modifier
                     .width(340.dp)
@@ -297,17 +292,16 @@ fun HomeScreenView(
         val confirmationText =
             "Are you sure you want to take out all of ${foodToDelete.value?.title?.trim()}?"
 
-        ConfirmPopUp(text = confirmationText,
-            onConfirm = {
-                viewModel.deleteFood(foodToDelete.value) {
-                    foodToDelete.value = null
-                    showFoodInfo.value = false
-                    confirmFoodDeleting.value = false
-                }
-            }, onClose = {
+        ConfirmPopUp(text = confirmationText, onConfirm = {
+            viewModel.deleteFood(foodToDelete.value) {
                 foodToDelete.value = null
+                showFoodInfo.value = false
                 confirmFoodDeleting.value = false
-            })
+            }
+        }, onClose = {
+            foodToDelete.value = null
+            confirmFoodDeleting.value = false
+        })
     }
 
     if (showAddFoodMenu.value) {

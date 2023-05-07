@@ -8,6 +8,7 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.components.*
+import com.patmy.ourfridge.components.sideBar.ProfileSideBar
 import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.model.MFridge
 import com.patmy.ourfridge.model.MUser
@@ -57,11 +58,12 @@ fun SocialScreen(
         },
         drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
         drawerContent = {
-            ProfileSideBar {
+            ProfileSideBar(onLogout = {
                 loggingOut.value = true
                 Firebase.auth.signOut()
                 navController.navigate(OurFridgeScreens.LoginScreen.name)
-            }
+            }, onSettingChanged = { navController.navigate(OurFridgeScreens.FridgeHomeScreen.name) },
+                onAccountDelete = {navController.navigate(OurFridgeScreens.LoginScreen.name)})
         },
         backgroundColor = MaterialTheme.colors.background,
         bottomBar = {

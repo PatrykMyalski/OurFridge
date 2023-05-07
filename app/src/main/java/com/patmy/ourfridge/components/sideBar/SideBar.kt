@@ -1,5 +1,6 @@
-package com.patmy.ourfridge.components
+package com.patmy.ourfridge.components.sideBar
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -14,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,10 +23,13 @@ import com.patmy.ourfridge.data.UserAndFridgeData
 
 
 @Composable
-fun ProfileSideBar(onClick: () -> Unit) {
+fun ProfileSideBar(
+    viewModel: SideBarViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    onLogout: () -> Unit,
+    onSettingChanged: () -> Unit,
+    onAccountDelete: () -> Unit,
+) {
     val interactionSource = MutableInteractionSource()
-
-    //TODO create viewModel actions
 
     val userState = remember {
         mutableStateOf(UserAndFridgeData.user)
@@ -37,6 +42,13 @@ fun ProfileSideBar(onClick: () -> Unit) {
     LaunchedEffect(key1 = UserAndFridgeData.user) {
         userState.value = UserAndFridgeData.user
     }
+
+
+    val context = LocalContext.current
+    val toastDuration = Toast.LENGTH_SHORT
+    val toast = Toast.makeText(
+        context, "Something went wrong!", toastDuration
+    )
 
 
     Card(modifier = Modifier.fillMaxSize(), backgroundColor = MaterialTheme.colors.background) {
@@ -56,18 +68,59 @@ fun ProfileSideBar(onClick: () -> Unit) {
             }
 
             when (sidebarViewState.value) {
-                "LEAVE" -> ConfirmView(confirmText("leave this fridge"),
-                    onConfirm = {},
-                    onDecline = { goBack() })
-                "CLEAR_HISTORY" -> ConfirmView(confirmText("clear fridge history"),
-                    onConfirm = {},
-                    onDecline = { goBack() })
+                "LEAVE" -> ConfirmView(confirmText("leave this fridge"), onConfirm = {
+                    viewModel.leaveFridge(onDone = {
+                        onSettingChanged()
+                        goBack()
+                    }, onFailure = {
+                        toast.show()
+                        goBack()
+                    })
+                }, onDecline = { goBack() })
+                "CLEAR_HISTORY" -> ConfirmView(confirmText("clear fridge history"), onConfirm = {
+                    viewModel.clearHistory(onDone = {
+                        onSettingChanged()
+                        goBack()
+                    }, onFailure = {
+                        toast.show()
+                        goBack()
+                    })
+                }, onDecline = { goBack() })
                 "DELETE_FOOD" -> ConfirmView(confirmText("delete all food from fridge"),
-                    onConfirm = {},
+                    onConfirm = {
+                        viewModel.deleteFood(onDone = {
+                            onSettingChanged()
+                            goBack()
+                        }, onFailure = {
+                            toast.show()
+                            goBack()
+                        })
+                    },
                     onDecline = { goBack() })
                 "CLEAR_SHOPPING" -> ConfirmView(confirmText("clear all positions on shopping list"),
-                    onConfirm = {},
+                    onConfirm = {
+                        viewModel.clearShopping(onDone = {
+                            onSettingChanged()
+                            goBack()
+                        }, onFailure = {
+                            toast.show()
+                            goBack()
+                        })
+                    },
                     onDecline = { goBack() })
+                "DELETE_ACCOUNT" -> ConfirmView(
+                    text = confirmText("delete your account"),
+                    onConfirm = {
+                        viewModel.deleteAccount(onDone = {
+                            onAccountDelete()
+                            goBack()
+                        }, onFailure = {
+                            toast.show()
+                            goBack()
+                        })
+                    }) {
+
+                }
                 else -> {
                     Text(
                         text = "Hi ${if (userState.value == null) "" else userState.value?.username}!",
@@ -79,13 +132,14 @@ fun ProfileSideBar(onClick: () -> Unit) {
                     SettingsView(onLeaveFridge = { sidebarViewState.value = "LEAVE" },
                         onClearHistory = { sidebarViewState.value = "CLEAR_HISTORY" },
                         onDeleteAllFood = { sidebarViewState.value = "DELETE_FOOD" },
-                        onClearShoppingList = { sidebarViewState.value = "CLEAR_SHOPPING" })
+                        onClearShoppingList = { sidebarViewState.value = "CLEAR_SHOPPING" },
+                        onDeleteAccount = { sidebarViewState.value = "DELETE_ACCOUNT" })
 
                     Column(
                         modifier = Modifier.clickable(
                             interactionSource = interactionSource, indication = null
                         ) {
-                            onClick.invoke()
+                            onLogout.invoke()
                             UserAndFridgeData.clearData()
                         }, horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -143,6 +197,7 @@ fun SettingsView(
     onClearHistory: () -> Unit,
     onDeleteAllFood: () -> Unit,
     onClearShoppingList: () -> Unit,
+    onDeleteAccount: () -> Unit,
 ) {
 
 
@@ -159,6 +214,9 @@ fun SettingsView(
         }
         SettingsOption(title = "Clear shopping list") {
             onClearShoppingList()
+        }
+        SettingsOption(title = "Delete account") {
+            onDeleteAccount()
         }
     }
 }
