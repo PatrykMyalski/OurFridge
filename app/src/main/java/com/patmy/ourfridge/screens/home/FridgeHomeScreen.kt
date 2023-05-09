@@ -277,11 +277,11 @@ fun HomeScreenView(
             foodToDelete.value = it
             confirmFoodDeleting.value = true
         }, onDecreaseFoodQuantity = { foodToDecrease, quantityToDecrease ->
-            viewModel.changeFoodQuantity("-", foodToDecrease, quantityToDecrease) {
+            viewModel.changeFoodQuantity("-", foodToDecrease!!, quantityToDecrease) {
                 showFoodInfo.value = false
             }
         }, onIncreaseFoodQuantity = { foodToIncrease, quantityToIncrease ->
-            viewModel.changeFoodQuantity("+", foodToIncrease, quantityToIncrease) {
+            viewModel.changeFoodQuantity("+", foodToIncrease!!, quantityToIncrease) {
                 showFoodInfo.value = false
             }
         })

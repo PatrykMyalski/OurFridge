@@ -24,6 +24,7 @@ import com.patmy.ourfridge.components.*
 import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.model.MFHistory
 import com.patmy.ourfridge.model.MFood
+import com.patmy.ourfridge.utilities.MyUtils.Companion.checkIfMoreThanThreeDecimals
 
 
 @Composable
@@ -125,6 +126,10 @@ fun FoodChangeView(
         mutableStateOf(false)
     }
 
+    val moreThanThreeDecimalsException = remember {
+        mutableStateOf(false)
+    }
+
 
     Column(
         modifier = Modifier
@@ -148,14 +153,16 @@ fun FoodChangeView(
         )
         if (inputValueToBig.value) ErrorMessage(text = "You can't take out more than you have!")
 
-        if (invalidInput.value) ErrorMessage(text = "Field is empty!")
+        if (invalidInput.value) ErrorMessage(text = if (moreThanThreeDecimalsException.value) "Quantity can have max of three decimals!" else "Field is empty!")
 
         Row(modifier = Modifier.padding(top = 5.dp, bottom = 30.dp)) {
             FoodInfoButtons(text = "Take out", shape = RoundedCornerShape(15.dp)) {
-                if (quantityState.value.isNotEmpty()) {
-                    if (quantityState.value.toInt() > foodInfo?.quantity?.toInt()!!) {
+
+                moreThanThreeDecimalsException.value = checkIfMoreThanThreeDecimals(quantityState.value)
+                if (quantityState.value.isNotEmpty() && quantityState.value.toFloatOrNull() != null && !moreThanThreeDecimalsException.value) {
+                    if (quantityState.value.toFloat() > foodInfo?.quantity?.toFloat()!!) {
                         inputValueToBig.value = true
-                    } else if (quantityState.value.toInt() == foodInfo.quantity?.toInt()!!) {
+                    } else if (quantityState.value.toFloat() == foodInfo.quantity?.toFloat()!!) {
                         inputValueToBig.value = false
                         onDelete()
                     } else {
@@ -164,13 +171,15 @@ fun FoodChangeView(
                     }
                 } else {
                     invalidInput.value = true
+
                 }
 
             }
             Spacer(modifier = Modifier.width(20.dp))
             FoodInfoButtons(text = "Put in", shape = RoundedCornerShape(15.dp)) {
+                moreThanThreeDecimalsException.value = checkIfMoreThanThreeDecimals(quantityState.value)
                 inputValueToBig.value = false
-                if (quantityState.value.isNotEmpty()) {
+                if (quantityState.value.isNotEmpty() && quantityState.value.toFloatOrNull() != null && !moreThanThreeDecimalsException.value) {
                     onQuantityChange("+", quantityState.value)
                 } else {
                     invalidInput.value = true

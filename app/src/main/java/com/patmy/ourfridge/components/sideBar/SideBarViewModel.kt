@@ -126,15 +126,17 @@ class SideBarViewModel : ViewModel() {
 
         val currentDateTime = MyUtils.getCurrentTime()
 
-        val newFoodList = emptyList<MFood?>()
+        val newFoodList = listOf(MFood())
         val newEvent = MFHistory(
             historyId = UUID.randomUUID().toString(),
             creatorId = userUId,
             event = "${UserAndFridgeData.user!!.username} deleted all food from fridge $currentDateTime."
         )
 
+        val historyListToUpdate = UserAndFridgeData.fridge?.fridgeHistory?.plus(newEvent)
+
         fridgeRef.document(UserAndFridgeData.user!!.fridge.toString())
-            .update("foodInside", newFoodList, "fridgeHistory", newEvent).addOnSuccessListener {
+            .update("foodInside", newFoodList, "fridgeHistory", historyListToUpdate).addOnSuccessListener {
                 UserAndFridgeData.fridge?.fridgeHistory?.plus(newEvent)
                 UserAndFridgeData.fridge?.foodInside = newFoodList
                 onDone()

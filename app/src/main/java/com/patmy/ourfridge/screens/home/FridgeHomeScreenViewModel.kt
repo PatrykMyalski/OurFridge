@@ -11,6 +11,7 @@ import com.patmy.ourfridge.model.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.math.round
 
 class FridgeHomeScreenViewModel : ViewModel() {
 
@@ -162,17 +163,22 @@ class FridgeHomeScreenViewModel : ViewModel() {
             }
     }
 
-    fun changeFoodQuantity(action: String, food: MFood?, quantity: String, onDone: () -> Unit) {
+    fun changeFoodQuantity(action: String, food: MFood, quantity: String, onDone: () -> Unit) {
 
         val fridgeUId = UserAndFridgeData.fridge!!.fridgeUsers[0]?.fridge!!
-
         val index = UserAndFridgeData.fridge?.foodInside?.indexOfFirst { it == food }
+        val newQuantity: String
+        val sum =
+            if (action == "-") food.quantity!!.toFloat() - quantity.toFloat() else food.quantity!!.toFloat() + quantity.toFloat()
+        val returned = (round((sum) * 100) / 100).toString()
+        val indexOfDot = returned.indexOf('.')
+        val length = returned.length - 1
+        val lastChar = returned.last()
+        newQuantity = if (length - indexOfDot == 1 && lastChar == '0') {
+            returned.toInt().toString()
+        } else returned
 
-        val newQuantity = if (action == "-") food?.quantity!!.toInt() - quantity.toInt()
-        else food?.quantity!!.toInt() + quantity.toInt()
-
-        UserAndFridgeData.fridge?.foodInside!![index!!]?.quantity = newQuantity.toString()
-
+        UserAndFridgeData.fridge?.foodInside!![index!!]?.quantity = newQuantity
 
         val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
         val currentDateTime = LocalDateTime.now().format(formatter)
@@ -190,13 +196,13 @@ class FridgeHomeScreenViewModel : ViewModel() {
         UserAndFridgeData.fridge?.fridgeHistory?.plus(historyEvent)
 
         db.collection("fridges").document(fridgeUId).update(
-                "foodInside",
-                UserAndFridgeData.fridge?.foodInside,
-                "fridgeHistory",
-                UserAndFridgeData.fridge?.fridgeHistory
-            ).addOnSuccessListener {
-                onDone()
-            }
+            "foodInside",
+            UserAndFridgeData.fridge?.foodInside,
+            "fridgeHistory",
+            UserAndFridgeData.fridge?.fridgeHistory
+        ).addOnSuccessListener {
+            onDone()
+        }
     }
 }
 

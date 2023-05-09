@@ -10,5 +10,11 @@ class MyUtils {
             return LocalDateTime.now().format(formatter)
         }
 
+        fun checkIfMoreThanThreeDecimals(value: String) : Boolean{
+            val transformedToFloat = value.toFloat().toString()
+            val dotIndex = transformedToFloat.indexOf('.')
+            return transformedToFloat.length - dotIndex >= 4
+        }
+
     }
 }

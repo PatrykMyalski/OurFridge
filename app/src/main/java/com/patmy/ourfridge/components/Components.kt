@@ -24,6 +24,7 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.patmy.ourfridge.model.MFood
 import com.patmy.ourfridge.model.radioUnits
+import com.patmy.ourfridge.utilities.MyUtils.Companion.checkIfMoreThanThreeDecimals
 
 
 @Composable
@@ -177,6 +178,14 @@ fun AddFoodMenu(
         mutableStateOf(radioUnits[0].displayValue)
     }
 
+    val invalidQuantity = remember {
+        mutableStateOf(false)
+    }
+
+    val moreThanThreeDecimals = remember {
+        mutableStateOf(false)
+    }
+
     PopUpWithTextField(onClose = onClose) {
         Column(modifier = Modifier.padding(top = 15.dp, bottom = 15.dp)) {
             InputField(
@@ -199,16 +208,27 @@ fun AddFoodMenu(
             ) {
                 radioUnits.forEach { text ->
                     val unit = text.displayValue
-                    Row(modifier = Modifier
-                        .selectable(selected = (unit == selectedUnit), onClick = {
-                            onUnitSelected(unit)
-                        })
-                        .padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(
-                            selected = (unit == selectedUnit),
+                    Row(
+                        modifier = Modifier
+                            .selectable(selected = (unit == selectedUnit), onClick = {
+                                onUnitSelected(unit)
+                            })
+                            .padding(4.dp), verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(selected = (unit == selectedUnit),
                             onClick = { onUnitSelected(unit) })
                         Text(text = unit)
                     }
+                }
+            }
+            if (invalidQuantity.value || moreThanThreeDecimals.value) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 5.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    ErrorMessage(text = if (invalidQuantity.value) "Pass valid quantity value!" else "Quantity can have max of three decimals!")
                 }
             }
             Row(
@@ -248,14 +268,25 @@ fun AddFoodMenu(
                     enabled = foodTitleState.value.trim()
                         .isNotEmpty() && foodQuantityState.value.trim().isNotEmpty()
                 ) {
-                    onAdd(
-                        MFood(
-                            title = foodTitleState.value,
-                            quantity = foodQuantityState.value,
-                            unit = selectedUnit
-                        )
-                    )
-                    if (!loading) {
+
+                    if (foodQuantityState.value.toFloatOrNull() == null || foodQuantityState.value.last() == '.' || foodQuantityState.value.first() == '.') {
+                        invalidQuantity.value = true
+                    } else {
+                        if (invalidQuantity.value) invalidQuantity.value = false
+                        if (checkIfMoreThanThreeDecimals(foodQuantityState.value)) {
+                            moreThanThreeDecimals.value = true
+                        } else {
+                            if (moreThanThreeDecimals.value) moreThanThreeDecimals.value = false
+                            onAdd(
+                                MFood(
+                                    title = foodTitleState.value,
+                                    quantity = foodQuantityState.value,
+                                    unit = selectedUnit
+                                )
+                            )
+                        }
+                    }
+                    if (!loading && !invalidQuantity.value && !moreThanThreeDecimals.value) {
                         onClose()
                     }
                 }
