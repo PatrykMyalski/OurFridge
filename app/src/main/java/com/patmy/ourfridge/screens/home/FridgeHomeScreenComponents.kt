@@ -157,7 +157,7 @@ fun FoodChangeView(
 
         Row(modifier = Modifier.padding(top = 5.dp, bottom = 30.dp)) {
             FoodInfoButtons(text = "Take out", shape = RoundedCornerShape(15.dp)) {
-
+                quantityState.value = quantityState.value.replace(',', '.')
                 moreThanThreeDecimalsException.value = checkIfMoreThanThreeDecimals(quantityState.value)
                 if (quantityState.value.isNotEmpty() && quantityState.value.toFloatOrNull() != null && !moreThanThreeDecimalsException.value) {
                     if (quantityState.value.toFloat() > foodInfo?.quantity?.toFloat()!!) {
@@ -177,6 +177,7 @@ fun FoodChangeView(
             }
             Spacer(modifier = Modifier.width(20.dp))
             FoodInfoButtons(text = "Put in", shape = RoundedCornerShape(15.dp)) {
+                quantityState.value = quantityState.value.replace(',', '.')
                 moreThanThreeDecimalsException.value = checkIfMoreThanThreeDecimals(quantityState.value)
                 inputValueToBig.value = false
                 if (quantityState.value.isNotEmpty() && quantityState.value.toFloatOrNull() != null && !moreThanThreeDecimalsException.value) {

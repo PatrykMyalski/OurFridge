@@ -269,6 +269,7 @@ fun AddFoodMenu(
                         .isNotEmpty() && foodQuantityState.value.trim().isNotEmpty()
                 ) {
 
+                    if (foodQuantityState.value.contains(',')) foodQuantityState.value = foodQuantityState.value.replace(',', '.')
                     if (foodQuantityState.value.toFloatOrNull() == null || foodQuantityState.value.last() == '.' || foodQuantityState.value.first() == '.') {
                         invalidQuantity.value = true
                     } else {

@@ -175,7 +175,7 @@ class FridgeHomeScreenViewModel : ViewModel() {
         val length = returned.length - 1
         val lastChar = returned.last()
         newQuantity = if (length - indexOfDot == 1 && lastChar == '0') {
-            returned.toInt().toString()
+            returned.dropLast(2)
         } else returned
 
         UserAndFridgeData.fridge?.foodInside!![index!!]?.quantity = newQuantity
