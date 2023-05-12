@@ -149,43 +149,53 @@ fun FoodChangeView(
             valueState = quantityState,
             label = "Quantity",
             enabled = true,
-            keyboardType = KeyboardType.Number
+            keyboardType = KeyboardType.Number,
+            maxLength = 6
         )
         if (inputValueToBig.value) ErrorMessage(text = "You can't take out more than you have!")
 
-        if (invalidInput.value) ErrorMessage(text = if (moreThanThreeDecimalsException.value) "Quantity can have max of three decimals!" else "Field is empty!")
+        if (invalidInput.value) ErrorMessage(text = if (moreThanThreeDecimalsException.value) "Quantity can have max of two decimals!" else "Field is empty!")
 
         Row(modifier = Modifier.padding(top = 5.dp, bottom = 30.dp)) {
             FoodInfoButtons(text = "Take out", shape = RoundedCornerShape(15.dp)) {
                 quantityState.value = quantityState.value.replace(',', '.')
-                moreThanThreeDecimalsException.value = checkIfMoreThanThreeDecimals(quantityState.value)
-                if (quantityState.value.isNotEmpty() && quantityState.value.toFloatOrNull() != null && !moreThanThreeDecimalsException.value) {
-                    if (quantityState.value.toFloat() > foodInfo?.quantity?.toFloat()!!) {
-                        inputValueToBig.value = true
-                    } else if (quantityState.value.toFloat() == foodInfo.quantity?.toFloat()!!) {
-                        inputValueToBig.value = false
-                        onDelete()
+                if (quantityState.value.isNotEmpty() && quantityState.value.toFloatOrNull() != null) {
+                    moreThanThreeDecimalsException.value =
+                        checkIfMoreThanThreeDecimals(quantityState.value)
+                    if (!moreThanThreeDecimalsException.value) {
+                        if (quantityState.value.toFloat() > foodInfo?.quantity?.toFloat()!!) {
+                            inputValueToBig.value = true
+                        } else if (quantityState.value.toFloat() == foodInfo.quantity?.toFloat()!!) {
+                            inputValueToBig.value = false
+                            onDelete()
+                        } else {
+                            inputValueToBig.value = false
+                            onQuantityChange("-", quantityState.value)
+                        }
                     } else {
-                        inputValueToBig.value = false
-                        onQuantityChange("-", quantityState.value)
+                        invalidInput.value = true
                     }
                 } else {
                     invalidInput.value = true
-
                 }
 
             }
             Spacer(modifier = Modifier.width(20.dp))
             FoodInfoButtons(text = "Put in", shape = RoundedCornerShape(15.dp)) {
                 quantityState.value = quantityState.value.replace(',', '.')
-                moreThanThreeDecimalsException.value = checkIfMoreThanThreeDecimals(quantityState.value)
+
                 inputValueToBig.value = false
-                if (quantityState.value.isNotEmpty() && quantityState.value.toFloatOrNull() != null && !moreThanThreeDecimalsException.value) {
-                    onQuantityChange("+", quantityState.value)
+                if (quantityState.value.isNotEmpty() && quantityState.value.toFloatOrNull() != null) {
+                    moreThanThreeDecimalsException.value =
+                        checkIfMoreThanThreeDecimals(quantityState.value)
+                    if (!moreThanThreeDecimalsException.value) {
+                        onQuantityChange("+", quantityState.value)
+                    } else {
+                        invalidInput.value = true
+                    }
                 } else {
                     invalidInput.value = true
                 }
-
             }
         }
         Row {
@@ -279,6 +289,7 @@ fun ShowHistory(onClose: () -> Unit) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight(0.8f)
+                        .padding(horizontal = 10.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
                     val iterator = myList.value!!.listIterator(myList.value!!.size)
@@ -289,7 +300,7 @@ fun ShowHistory(onClose: () -> Unit) {
                 }
             }
             Button(modifier = Modifier.fillMaxWidth(), onClick = { onClose() }) {
-                Text(text = "Close", fontSize = 20.sp)
+                Text(text = "Close", fontSize = 20.sp, color = MaterialTheme.colors.primaryVariant)
             }
         }
     }

@@ -25,10 +25,12 @@ import com.patmy.ourfridge.data.UserAndFridgeData
 @Composable
 fun ProfileSideBar(
     viewModel: SideBarViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    drawerState: Boolean,
     onLogout: () -> Unit,
     onSettingChanged: () -> Unit,
     onAccountDelete: () -> Unit,
 ) {
+
     val interactionSource = MutableInteractionSource()
 
     val userState = remember {
@@ -39,8 +41,20 @@ fun ProfileSideBar(
         mutableStateOf("")
     }
 
+    fun confirmText(type: String): String {
+        return "Are you sure you want to $type? You can't undo this action!"
+    }
+
+    fun goBack() {
+        sidebarViewState.value = ""
+    }
+
     LaunchedEffect(key1 = UserAndFridgeData.user) {
         userState.value = UserAndFridgeData.user
+    }
+
+    LaunchedEffect(key1 = drawerState){
+        goBack()
     }
 
 
@@ -59,13 +73,7 @@ fun ProfileSideBar(
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            fun confirmText(type: String): String {
-                return "Are you sure you want to $type? You can't undo this action!"
-            }
 
-            fun goBack() {
-                sidebarViewState.value = ""
-            }
 
             when (sidebarViewState.value) {
                 "LEAVE" -> ConfirmView(confirmText("leave this fridge"), onConfirm = {
@@ -118,9 +126,9 @@ fun ProfileSideBar(
                             toast.show()
                             goBack()
                         })
-                    }) {
+                    }, onDecline = {goBack()})
 
-                }
+
                 else -> {
                     Text(
                         text = "Hi ${if (userState.value == null) "" else userState.value?.username}!",

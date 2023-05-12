@@ -29,68 +29,75 @@ class SideBarViewModel : ViewModel() {
      */
     fun leaveFridge(onDone: () -> Unit, onFailure: () -> Unit) {
 
-        val newUserList =
-            UserAndFridgeData.fridge?.fridgeUsers!!.filterNot { it == UserAndFridgeData.user }
-        val updatedUser = UserAndFridgeData.user!!.copy()
-        updatedUser.role = null
-        updatedUser.fridge = null
-
-        // leaving fridge when user is admin of the fridge, passing admin role to next user
-        if (UserAndFridgeData.user?.role == "admin" && newUserList.isNotEmpty()) {
-            newUserList[0]?.role = "admin"
-            fridgeRef.document(UserAndFridgeData.user!!.fridge.toString())
-                .update("fridgeUsers", newUserList).addOnSuccessListener {
-                    userRef.document(userUId).set(updatedUser).addOnSuccessListener {
-                        userRef.whereEqualTo("email", newUserList[0]?.email).get()
-                            .addOnSuccessListener {
-                                userRef.document(it.documents[0].id).update("role", "admin")
-                                    .addOnSuccessListener {
-                                        UserAndFridgeData.clearData()
-                                        UserAndFridgeData.user = updatedUser
-                                        onDone()
-                                    }.addOnFailureListener {
-                                        onFailure()
-                                    }
-                            }.addOnFailureListener {
-                                onFailure()
-                            }
-                    }.addOnFailureListener {
-                        onFailure()
-                    }
-                }.addOnFailureListener {
-                    onFailure()
-                }
-        } else if (newUserList.isEmpty()) {
-            // deleting fridge when user is the only one using fridge and want to leave
-            fridgeRef.document(UserAndFridgeData.user!!.fridge.toString()).delete()
-                .addOnSuccessListener {
-                    userRef.document(userUId).set(updatedUser).addOnSuccessListener {
-                        db.collection("shopping_lists")
-                            .document(UserAndFridgeData.user!!.fridge.toString()).delete()
-                            .addOnSuccessListener {
-                                UserAndFridgeData.clearData()
-                                UserAndFridgeData.user = updatedUser
-                                onDone()
-                            }.addOnFailureListener {
-                                onFailure()
-                            }
-                    }
-                }
+        if (UserAndFridgeData.user?.fridge == null){
+            onFailure()
         } else {
-            // ordinary case when normal user want to leave fridge
-            fridgeRef.document(UserAndFridgeData.user!!.fridge.toString())
-                .update("fridgeUsers", newUserList).addOnSuccessListener {
-                    userRef.document(userUId).set(updatedUser).addOnSuccessListener {
-                        UserAndFridgeData.clearData()
-                        UserAndFridgeData.user = updatedUser
-                        onDone()
+            val newUserList =
+                UserAndFridgeData.fridge?.fridgeUsers!!.filterNot { it == UserAndFridgeData.user }
+            val updatedUser = UserAndFridgeData.user!!.copy()
+            updatedUser.role = null
+            updatedUser.fridge = null
+
+            // leaving fridge when user is admin of the fridge, passing admin role to next user
+
+            if (UserAndFridgeData.user?.role == "admin" && newUserList.isNotEmpty()) {
+                newUserList[0]?.role = "admin"
+                fridgeRef.document(UserAndFridgeData.user!!.fridge.toString())
+                    .update("fridgeUsers", newUserList).addOnSuccessListener {
+                        userRef.document(userUId).set(updatedUser).addOnSuccessListener {
+                            userRef.whereEqualTo("email", newUserList[0]?.email).get()
+                                .addOnSuccessListener {
+                                    userRef.document(it.documents[0].id).update("role", "admin")
+                                        .addOnSuccessListener {
+                                            UserAndFridgeData.clearData()
+                                            UserAndFridgeData.user = updatedUser
+                                            onDone()
+                                        }.addOnFailureListener {
+                                            onFailure()
+                                        }
+                                }.addOnFailureListener {
+                                    onFailure()
+                                }
+                        }.addOnFailureListener {
+                            onFailure()
+                        }
                     }.addOnFailureListener {
                         onFailure()
                     }
-                }.addOnFailureListener {
-                    onFailure()
-                }
+            } else if (newUserList.isEmpty()) {
+                // deleting fridge when user is the only one using fridge and want to leave
+                fridgeRef.document(UserAndFridgeData.user!!.fridge.toString()).delete()
+                    .addOnSuccessListener {
+                        userRef.document(userUId).set(updatedUser).addOnSuccessListener {
+                            db.collection("shopping_lists")
+                                .document(UserAndFridgeData.user!!.fridge.toString()).delete()
+                                .addOnSuccessListener {
+                                    UserAndFridgeData.clearData()
+                                    UserAndFridgeData.user = updatedUser
+                                    onDone()
+                                }.addOnFailureListener {
+                                    onFailure()
+                                }
+                        }
+                    }
+            } else {
+                // ordinary case when normal user want to leave fridge
+                fridgeRef.document(UserAndFridgeData.user!!.fridge.toString())
+                    .update("fridgeUsers", newUserList).addOnSuccessListener {
+                        userRef.document(userUId).set(updatedUser).addOnSuccessListener {
+                            UserAndFridgeData.clearData()
+                            UserAndFridgeData.user = updatedUser
+                            onDone()
+                        }.addOnFailureListener {
+                            onFailure()
+                        }
+                    }.addOnFailureListener {
+                        onFailure()
+                    }
+            }
         }
+
+
     }
 
     /**

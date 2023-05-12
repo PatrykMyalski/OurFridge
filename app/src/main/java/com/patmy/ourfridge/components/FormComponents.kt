@@ -16,12 +16,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -35,7 +33,6 @@ import com.patmy.ourfridge.R
 import com.patmy.ourfridge.navigation.OurFridgeScreens
 
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun UserForm(
     navController: NavController,
@@ -62,7 +59,6 @@ fun UserForm(
         val userNameFocusRequest = remember { FocusRequester() }
         val passwordFocusRequest = remember { FocusRequester() }
         val passwordAgainFocusRequest = remember { FocusRequester() }
-        val keyboardController = LocalSoftwareKeyboardController.current
         val valid = remember(
             emailState.value, passwordState.value, passwordAgainState.value, userNameState.value
         ) {
@@ -88,7 +84,9 @@ fun UserForm(
                 keyboardType = KeyboardType.Text,
                 onAction = KeyboardActions {
                     passwordFocusRequest.requestFocus()
-                })
+                },
+            maxLength = 30,
+            icon = {})
             if (!valid && !validForm.value) {
                 if (userNameState.value.length < 2) {
                     ErrorMessage(text = "Username must be at least 2 characters long")
@@ -288,6 +286,8 @@ fun EmailInput(
         enabled = enabled,
         keyboardType = KeyboardType.Email,
         imeAction = imeAction,
-        onAction = onAction
+        onAction = onAction,
+        maxLength = 30,
+        icon = {}
     )
 }

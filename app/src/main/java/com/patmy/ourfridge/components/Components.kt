@@ -4,11 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,17 +45,31 @@ fun InputField(
     valueState: MutableState<String>,
     label: String,
     enabled: Boolean,
+    maxLength: Int = 15,
     singleLine: Boolean = true,
     keyboardType: KeyboardType,
     imeAction: ImeAction = ImeAction.Next,
     onAction: KeyboardActions = KeyboardActions.Default,
+    icon: @Composable () -> Unit = {
+        Icon(
+            imageVector = Icons.Default.DeleteOutline,
+            contentDescription = "Clear",
+            modifier = Modifier.clickable { valueState.value = "" }
+        )
+    },
 ) {
     OutlinedTextField(
         modifier = modifier
             .padding(bottom = 10.dp, start = 10.dp, end = 10.dp)
             .fillMaxWidth(),
         value = valueState.value,
-        onValueChange = { valueState.value = it },
+        onValueChange = {
+            if (valueState.value.length <= maxLength) {
+                valueState.value = it
+            }
+            println("CurrentString: ${valueState.value}")
+            println("inputed: $it")
+        },
         label = { Text(text = label) },
         enabled = enabled,
         singleLine = singleLine,
@@ -65,6 +80,7 @@ fun InputField(
             unfocusedLabelColor = MaterialTheme.colors.primary,
             cursorColor = MaterialTheme.colors.primaryVariant
         ),
+        trailingIcon = icon,
         textStyle = TextStyle(fontSize = 20.sp),
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
         keyboardActions = onAction,
@@ -186,6 +202,8 @@ fun AddFoodMenu(
         mutableStateOf(false)
     }
 
+    val interactionSource = MutableInteractionSource()
+
     PopUpWithTextField(onClose = onClose) {
         Column(modifier = Modifier.padding(top = 15.dp, bottom = 15.dp)) {
             InputField(
@@ -198,7 +216,8 @@ fun AddFoodMenu(
                 valueState = foodQuantityState,
                 label = "Quantity",
                 enabled = true,
-                keyboardType = KeyboardType.Number
+                keyboardType = KeyboardType.Number,
+                maxLength = 6
             )
             Row(
                 modifier = Modifier
@@ -210,9 +229,12 @@ fun AddFoodMenu(
                     val unit = text.displayValue
                     Row(
                         modifier = Modifier
-                            .selectable(selected = (unit == selectedUnit), onClick = {
-                                onUnitSelected(unit)
-                            })
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null,
+                                onClick = {
+                                    onUnitSelected(unit)
+                                })
                             .padding(4.dp), verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(selected = (unit == selectedUnit),
@@ -269,7 +291,8 @@ fun AddFoodMenu(
                         .isNotEmpty() && foodQuantityState.value.trim().isNotEmpty()
                 ) {
 
-                    if (foodQuantityState.value.contains(',')) foodQuantityState.value = foodQuantityState.value.replace(',', '.')
+                    if (foodQuantityState.value.contains(',')) foodQuantityState.value =
+                        foodQuantityState.value.replace(',', '.')
                     if (foodQuantityState.value.toFloatOrNull() == null || foodQuantityState.value.last() == '.' || foodQuantityState.value.first() == '.') {
                         invalidQuantity.value = true
                     } else {

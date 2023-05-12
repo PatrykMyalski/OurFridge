@@ -68,7 +68,7 @@ fun ShoppingScreen(
         },
         drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
         drawerContent = {
-            ProfileSideBar(onLogout = {
+            ProfileSideBar(drawerState = scaffoldState.drawerState.isOpen, onLogout = {
                 loggingOut.value = true
                 Firebase.auth.signOut()
                 navController.navigate(OurFridgeScreens.LoginScreen.name)

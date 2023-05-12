@@ -83,25 +83,20 @@ fun FridgeHomeScreen(
             showHistory.value = true
         })
     }, drawerGesturesEnabled = scaffoldState.drawerState.isOpen, drawerContent = {
-        ProfileSideBar(onLogout = {
+        ProfileSideBar(drawerState = scaffoldState.drawerState.isOpen, onLogout = {
             loggingOut.value = true
             Firebase.auth.signOut()
             navController.navigate(OurFridgeScreens.LoginScreen.name)
         }, onSettingChanged = { scope.launch { scaffoldState.drawerState.close() } },
-            onAccountDelete = { navController.navigate(OurFridgeScreens.LoginScreen.name)})
+            onAccountDelete = { navController.navigate(OurFridgeScreens.LoginScreen.name) })
 
     }, backgroundColor = MaterialTheme.colors.background, bottomBar = {
         OurFridgeAppBottomBar(navController, currentScreen = "home")
     }) {
         Box(modifier = Modifier.padding(it)) {
             if (loadingData.value) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    CircularProgressIndicator(color = MaterialTheme.colors.secondary)
-                }
+                LoadingCircleCenter()
+
             } else {
                 HomeScreenView(showHistory = showHistory.value,
                     loadingFridge = loadingFridge.value,
@@ -129,6 +124,17 @@ fun FridgeHomeScreen(
                     })
             }
         }
+    }
+}
+
+@Composable
+fun LoadingCircleCenter() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        CircularProgressIndicator(color = MaterialTheme.colors.secondary)
     }
 }
 
@@ -185,7 +191,7 @@ fun HomeScreenView(
                     .verticalScroll(rememberScrollState())
             ) {
                 if (loadingFridge) {
-                    CircularProgressIndicator(color = MaterialTheme.colors.primary)
+                    LoadingCircleCenter()
                 } else {
                     if (UserAndFridgeData.user?.fridge == null || UserAndFridgeData.user?.fridge == "null") {
                         Text(
@@ -222,6 +228,8 @@ fun HomeScreenView(
             }
         }
         if (UserAndFridgeData.user?.fridge == null || UserAndFridgeData.user?.fridge == "null") {
+
+
             Row(
                 modifier = Modifier.width(340.dp), horizontalArrangement = Arrangement.SpaceBetween
             ) {
