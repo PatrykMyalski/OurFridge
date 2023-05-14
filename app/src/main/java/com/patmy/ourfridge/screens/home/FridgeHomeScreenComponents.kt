@@ -30,7 +30,7 @@ import com.patmy.ourfridge.utilities.MyUtils.Companion.checkIfMoreThanThreeDecim
 @Composable
 fun FoodInfoView(foodData: MFood?, onClose: () -> Unit, onChange: () -> Unit) {
     Column(
-        modifier = Modifier.padding(top = 10.dp),
+        modifier = Modifier.padding(10.dp),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -160,6 +160,7 @@ fun FoodChangeView(
             FoodInfoButtons(text = "Take out", shape = RoundedCornerShape(15.dp)) {
                 quantityState.value = quantityState.value.replace(',', '.')
                 if (quantityState.value.isNotEmpty() && quantityState.value.toFloatOrNull() != null) {
+                    invalidInput.value = false
                     moreThanThreeDecimalsException.value =
                         checkIfMoreThanThreeDecimals(quantityState.value)
                     if (!moreThanThreeDecimalsException.value) {
@@ -224,13 +225,13 @@ fun ShowFoodInfo(
     }
 
     if (showInfo.value) {
-        PopUpTemplate(onClose = { onClose() }) {
+        CustomPopUp(textFieldIn = false, onClose = { onClose() }) {
             FoodInfoView(foodInfo, onClose) {
                 showInfo.value = false
             }
         }
     } else {
-        PopUpWithTextField(onClose = onClose) {
+        CustomPopUp(textFieldIn = true, onClose = onClose) {
             FoodChangeView(foodInfo, onClose, onDelete = {
                 onDelete(foodInfo)
             }, onQuantityChange = { type, value ->
@@ -251,19 +252,18 @@ fun FoodLabel(food: MFood?, onClick: () -> Unit, onDelete: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onClick.invoke() },
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row {
-                Text(text = food?.title.toString(), modifier = Modifier.padding(end = 18.dp))
-                Text(
-                    text = "${food?.quantity.toString()}${food?.unit.toString()}",
-                    modifier = Modifier.padding(end = 2.dp)
-                )
+            Row (modifier = Modifier.fillMaxWidth(0.9f), horizontalArrangement = Arrangement.SpaceBetween){
+                Text(text = "${food?.title.toString()} ${food?.quantity.toString()}${food?.unit.toString()}", modifier = Modifier.padding(end = 18.dp))
+
             }
             Icon(imageVector = Icons.Default.Delete,
                 contentDescription = "Delete",
                 tint = MaterialTheme.colors.secondary,
                 modifier = Modifier.clickable { onDelete() })
+
         }
         Divider(modifier = Modifier.fillMaxWidth(), color = Color.Black, thickness = 1.dp)
     }
@@ -277,7 +277,7 @@ fun ShowHistory(onClose: () -> Unit) {
         mutableStateOf(UserAndFridgeData.fridge?.fridgeHistory)
     }
 
-    PopUpTemplate(onClose = onClose) {
+    CustomPopUp(textFieldIn = true, onClose = onClose) {
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.8f)

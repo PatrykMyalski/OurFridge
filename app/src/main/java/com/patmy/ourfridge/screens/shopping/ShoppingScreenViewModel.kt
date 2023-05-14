@@ -2,7 +2,6 @@ package com.patmy.ourfridge.screens.shopping
 
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.auth.User
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.data.UserAndFridgeData
@@ -75,12 +74,11 @@ class ShoppingScreenViewModel : ViewModel() {
         }
     }
 
-    fun finishShopping(delete: Boolean, articleList: List<MArticle?>, onDone: () -> Unit) {
+    fun finishShopping(articleList: List<MArticle?>, onDone: () -> Unit) {
 
         val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
         val currentDateTime = LocalDateTime.now().format(formatter)
-        var articleListUpdate =
-            if (delete) mutableListOf(MArticle()) else articleList.toMutableList()
+        var articleListUpdate = articleList.toMutableList()
         var fridgeAfterAdding = UserAndFridgeData.fridge?.foodInside
         var fridgeHistoryUpdate = UserAndFridgeData.fridge?.fridgeHistory
         val articlesAdded = mutableListOf<String>()
@@ -103,11 +101,13 @@ class ShoppingScreenViewModel : ViewModel() {
             }
         }
 
-        if (!delete) {
-            articleListUpdate = articleListUpdate.filterNot { it?.checked == true }.toMutableList()
+        articleListUpdate = articleListUpdate.filterNot { it?.checked == true }.toMutableList()
+
+        if (articleListUpdate.isEmpty()){
+            articleListUpdate = mutableListOf(MArticle())
         }
 
-        fridgeAfterAdding!!.sortedBy { it?.title }
+        fridgeAfterAdding = fridgeAfterAdding!!.sortedBy { it?.title }
 
         val eventList = articlesAdded.joinToString(separator = ", ")
 

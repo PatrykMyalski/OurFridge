@@ -1,6 +1,5 @@
 package com.patmy.ourfridge.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -21,8 +20,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
 import com.patmy.ourfridge.model.MFood
 import com.patmy.ourfridge.model.radioUnits
 import com.patmy.ourfridge.utilities.MyUtils.Companion.checkIfMoreThanThreeDecimals
@@ -51,11 +48,9 @@ fun InputField(
     imeAction: ImeAction = ImeAction.Next,
     onAction: KeyboardActions = KeyboardActions.Default,
     icon: @Composable () -> Unit = {
-        Icon(
-            imageVector = Icons.Default.DeleteOutline,
+        Icon(imageVector = Icons.Default.DeleteOutline,
             contentDescription = "Clear",
-            modifier = Modifier.clickable { valueState.value = "" }
-        )
+            modifier = Modifier.clickable { valueState.value = "" })
     },
 ) {
     OutlinedTextField(
@@ -64,11 +59,9 @@ fun InputField(
             .fillMaxWidth(),
         value = valueState.value,
         onValueChange = {
-            if (valueState.value.length <= maxLength) {
+            if (it.length <= maxLength) {
                 valueState.value = it
             }
-            println("CurrentString: ${valueState.value}")
-            println("inputed: $it")
         },
         label = { Text(text = label) },
         enabled = enabled,
@@ -89,30 +82,7 @@ fun InputField(
 
 
 @Composable
-fun PopUpTemplate(onClose: () -> Unit, content: @Composable () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0x67000000))
-    ) {
-        Popup(alignment = Alignment.Center,
-            properties = PopupProperties(),
-            onDismissRequest = { onClose() }) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .background(MaterialTheme.colors.background, RoundedCornerShape(20)),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                content()
-            }
-        }
-    }
-}
-
-@Composable
-fun PopUpWithTextField(onClose: () -> Unit, content: @Composable () -> Unit) {
+fun CustomPopUp(textFieldIn: Boolean, onClose: () -> Unit, content: @Composable () -> Unit) {
 
     val interactionSource = MutableInteractionSource()
 
@@ -123,10 +93,16 @@ fun PopUpWithTextField(onClose: () -> Unit, content: @Composable () -> Unit) {
                 onClose()
             }, backgroundColor = Color(0x67000000)
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = if (textFieldIn) Arrangement.Top else Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Card(
                 modifier = Modifier
-                    .padding(start = 30.dp, end = 30.dp, top = 100.dp)
+                    .padding(
+                        start = 30.dp, end = 30.dp, top = if (textFieldIn) 100.dp else 0.dp
+                    )
                     .clickable(interactionSource = interactionSource, indication = null) {},
                 backgroundColor = MaterialTheme.colors.background,
                 shape = RoundedCornerShape(10),
@@ -140,17 +116,23 @@ fun PopUpWithTextField(onClose: () -> Unit, content: @Composable () -> Unit) {
 
 @Composable
 fun ConfirmPopUp(text: String, onConfirm: () -> Unit, onClose: () -> Unit) {
-    PopUpTemplate(onClose) {
-        Text(
-            text = text,
-            modifier = Modifier.padding(vertical = 10.dp, horizontal = 5.dp),
-            overflow = TextOverflow.Clip,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colors.primaryVariant
-        )
-        Button(onClick = { onConfirm() }) {
-            Text(text = "Confirm", color = MaterialTheme.colors.primaryVariant)
+    CustomPopUp(textFieldIn = false, onClose = onClose) {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = text,
+                modifier = Modifier.padding(vertical = 10.dp, horizontal = 5.dp),
+                overflow = TextOverflow.Clip,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colors.primaryVariant
+            )
+            Button(onClick = { onConfirm() }) {
+                Text(text = "Confirm", color = MaterialTheme.colors.primaryVariant)
+            }
         }
+
     }
 }
 
@@ -204,13 +186,14 @@ fun AddFoodMenu(
 
     val interactionSource = MutableInteractionSource()
 
-    PopUpWithTextField(onClose = onClose) {
+    CustomPopUp(textFieldIn = true, onClose = onClose) {
         Column(modifier = Modifier.padding(top = 15.dp, bottom = 15.dp)) {
             InputField(
                 valueState = foodTitleState,
                 label = "Name",
                 enabled = true,
-                keyboardType = KeyboardType.Text
+                keyboardType = KeyboardType.Text,
+                maxLength = 60
             )
             InputField(
                 valueState = foodQuantityState,
@@ -229,15 +212,15 @@ fun AddFoodMenu(
                     val unit = text.displayValue
                     Row(
                         modifier = Modifier
-                            .clickable(
-                                interactionSource = interactionSource,
+                            .clickable(interactionSource = interactionSource,
                                 indication = null,
                                 onClick = {
                                     onUnitSelected(unit)
                                 })
                             .padding(4.dp), verticalAlignment = Alignment.CenterVertically
                     ) {
-                        RadioButton(selected = (unit == selectedUnit),
+                        RadioButton(
+                            selected = (unit == selectedUnit),
                             onClick = { onUnitSelected(unit) })
                         Text(text = unit)
                     }

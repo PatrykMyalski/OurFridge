@@ -68,15 +68,17 @@ fun ShoppingScreen(
         },
         drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
         drawerContent = {
-            ProfileSideBar(drawerState = scaffoldState.drawerState.isOpen, onLogout = {
-                loggingOut.value = true
-                Firebase.auth.signOut()
-                navController.navigate(OurFridgeScreens.LoginScreen.name)
-            }, onSettingChanged = { navController.navigate(OurFridgeScreens.FridgeHomeScreen.name) },
-                onAccountDelete = {navController.navigate(OurFridgeScreens.LoginScreen.name)})
+            ProfileSideBar(drawerState = scaffoldState.drawerState.isOpen,
+                onLogout = {
+                    loggingOut.value = true
+                    Firebase.auth.signOut()
+                    navController.navigate(OurFridgeScreens.LoginScreen.name)
+                },
+                onSettingChanged = { navController.navigate(OurFridgeScreens.FridgeHomeScreen.name) },
+                onAccountDelete = { navController.navigate(OurFridgeScreens.LoginScreen.name) })
         },
         floatingActionButton = {
-            FAB {
+            if (!showAddToFridgeConfirm.value) FAB {
                 showArticleAddMenu.value = true
             }
         },
@@ -116,11 +118,7 @@ fun ShoppingScreen(
         }
         if (showAddToFridgeConfirm.value) {
             AddToFridgeConfirm(onDoNotDelete = {
-                viewModel.finishShopping(false, shoppingList.value?.shoppingList!!) {
-                    showAddToFridgeConfirm.value = false
-                }
-            }, onDelete = {
-                viewModel.finishShopping(true, shoppingList.value?.shoppingList!!) {
+                viewModel.finishShopping(shoppingList.value?.shoppingList!!) {
                     showAddToFridgeConfirm.value = false
                 }
             }, onClose = {
@@ -131,8 +129,8 @@ fun ShoppingScreen(
 }
 
 @Composable
-fun AddToFridgeConfirm(onClose: () -> Unit, onDoNotDelete: () -> Unit, onDelete: () -> Unit) {
-    PopUpTemplate(onClose = { onClose() }) {
+fun AddToFridgeConfirm(onClose: () -> Unit, onDoNotDelete: () -> Unit) {
+    CustomPopUp(textFieldIn = false, onClose = { onClose() }) {
         Column(
             modifier = Modifier
                 .padding(10.dp)
@@ -141,21 +139,18 @@ fun AddToFridgeConfirm(onClose: () -> Unit, onDoNotDelete: () -> Unit, onDelete:
         ) {
             AddToFridgeConfirmText(text = "You will add all checked articles to the fridge.")
             Spacer(modifier = Modifier.height(5.dp))
-            AddToFridgeConfirmText(text = "Do you want to delete all unchecked articles?")
-            Spacer(modifier = Modifier.height(12.dp))
-            AddToFridgeConfirmText(text = "If you want to go back just click outside this popup.")
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 10.dp, end = 10.dp, top = 10.dp),
                 horizontalArrangement = Arrangement.Center
             ) {
-                AddToFridgeConfirmButton(title = "Delete") {
-                    onDelete()
+                AddToFridgeConfirmButton(title = "Ok") {
+                    onDoNotDelete()
                 }
                 Spacer(modifier = Modifier.width(50.dp))
-                AddToFridgeConfirmButton(title = "Don't delete") {
-                    onDoNotDelete()
+                AddToFridgeConfirmButton(title = "Close") {
+                    onClose()
                 }
             }
         }
@@ -231,12 +226,18 @@ fun ShoppingMainView(
         }
         val context = LocalContext.current
         val toastDuration = Toast.LENGTH_SHORT
-        val toast = Toast.makeText(
-            context, "First you need to add something to shopping list", toastDuration
+        val toastEmptyList = Toast.makeText(
+            context, "First you need to add something to shopping list!", toastDuration
         )
+        val toastAnyChecked = Toast.makeText(
+            context, "You need to check at least one article to add them!", toastDuration
+        )
+
         AddArticlesButton(loading) {
             if ((shoppingList!![0]?.id == null || shoppingList[0]?.id == "null")) {
-                toast.show()
+                toastEmptyList.show()
+            } else if (!shoppingList.any { it?.checked == true }) {
+                toastAnyChecked.show()
             } else {
                 onAddArticles()
             }
@@ -255,6 +256,10 @@ fun ArticleLabel(
 
     val checked = remember {
         mutableStateOf(articleInfo?.checked!!)
+    }
+
+    LaunchedEffect(key1 = articleInfo) {
+        checked.value = articleInfo?.checked!!
     }
 
     Row(
