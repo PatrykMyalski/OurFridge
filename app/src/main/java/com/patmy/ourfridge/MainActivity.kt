@@ -11,6 +11,7 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.google.android.gms.ads.MobileAds
 import com.patmy.ourfridge.navigation.OurFridgeNavigation
 import com.patmy.ourfridge.ui.theme.OurFridgeTheme
 
@@ -27,6 +28,7 @@ class MainActivity : ComponentActivity() {
                     OurFridgeApp()
                 }
             }
+            MobileAds.initialize(this)
         }
     }
 }

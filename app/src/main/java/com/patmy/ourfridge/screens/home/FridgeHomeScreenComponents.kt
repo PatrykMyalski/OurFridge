@@ -134,7 +134,7 @@ fun FoodChangeView(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 15.dp),
+            .padding(vertical = 15.dp, horizontal = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(

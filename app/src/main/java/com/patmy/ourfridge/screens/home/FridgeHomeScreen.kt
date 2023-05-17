@@ -17,7 +17,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.patmy.ourfridge.components.*
@@ -83,11 +87,13 @@ fun FridgeHomeScreen(
             showHistory.value = true
         })
     }, drawerGesturesEnabled = scaffoldState.drawerState.isOpen, drawerContent = {
-        ProfileSideBar(drawerState = scaffoldState.drawerState.isOpen, onLogout = {
-            loggingOut.value = true
-            Firebase.auth.signOut()
-            navController.navigate(OurFridgeScreens.LoginScreen.name)
-        }, onSettingChanged = { scope.launch { scaffoldState.drawerState.close() } },
+        ProfileSideBar(drawerState = scaffoldState.drawerState.isOpen,
+            onLogout = {
+                loggingOut.value = true
+                Firebase.auth.signOut()
+                navController.navigate(OurFridgeScreens.LoginScreen.name)
+            },
+            onSettingChanged = { scope.launch { scaffoldState.drawerState.close() } },
             onAccountDelete = { navController.navigate(OurFridgeScreens.LoginScreen.name) })
 
     }, backgroundColor = MaterialTheme.colors.background, bottomBar = {
@@ -171,6 +177,24 @@ fun HomeScreenView(
     Column(
         modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            AndroidView(modifier = Modifier
+                .width(320.dp)
+                .height(50.dp), factory = { context ->
+                AdView(context).apply {
+                    setAdSize(AdSize.BANNER)
+
+                    // TODO before production change this to real ad!
+                    adUnitId = "ca-app-pub-3940256099942544/6300978111"
+                    loadAd(AdRequest.Builder().build())
+                }
+            })
+        }
         Text(
             text = "What is in your fridge?",
             modifier = Modifier.padding(top = 10.dp),

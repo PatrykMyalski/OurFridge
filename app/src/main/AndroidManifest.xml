@@ -12,10 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.OurFridge"
         tools:targetApi="31">
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-9814861787222136~4984621729"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.OurFridge">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

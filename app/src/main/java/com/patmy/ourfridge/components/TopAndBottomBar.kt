@@ -126,6 +126,7 @@ fun OurFridgeAppBottomBar(
     }
 }
 
+
 @Composable
 fun BottomAppBarIcon(
     modifier: Modifier,
