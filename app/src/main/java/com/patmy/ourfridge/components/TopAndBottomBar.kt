@@ -2,7 +2,6 @@ package com.patmy.ourfridge.components
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -11,7 +10,6 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,19 +17,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
 import com.patmy.ourfridge.R
 import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.navigation.OurFridgeScreens
 
 @Composable
 fun OurFridgeAppTopBar(
-    screen: String = "",
     onProfileClicked: () -> Unit = {},
-    onShowHistory: () -> Unit = {},
 ) {
     TopAppBar(modifier = Modifier, backgroundColor = MaterialTheme.colors.primary, title = {
         Row(
@@ -39,30 +38,23 @@ fun OurFridgeAppTopBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = "OurFridge",
-                modifier = Modifier,
-                color = MaterialTheme.colors.secondary,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                AndroidView(modifier = Modifier
+                    .width(320.dp)
+                    .height(50.dp), factory = { context ->
+                    AdView(context).apply {
+                        setAdSize(AdSize.BANNER)
 
-            if (screen == "home") {
-                val interactionSource = remember {
-                    MutableInteractionSource()
-                }
-                Icon(
-                    imageVector = Icons.Default.History,
-                    contentDescription = "View History ",
-                    modifier = Modifier
-                        .size(50.dp)
-                        .clickable(interactionSource = interactionSource, indication = null) {
-                            if (UserAndFridgeData.user?.fridge != null && UserAndFridgeData.user?.fridge != "null") {
-                                onShowHistory()
-                            }
-                        },
-                    tint = MaterialTheme.colors.primaryVariant,
-                )
+                        // TODO before production change this to real ad!
+                        adUnitId = "ca-app-pub-3940256099942544/6300978111"
+                        loadAd(AdRequest.Builder().build())
+                    }
+                })
             }
         }
     }, navigationIcon = {

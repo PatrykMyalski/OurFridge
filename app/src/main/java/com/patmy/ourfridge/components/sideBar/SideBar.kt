@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,10 +26,12 @@ import com.patmy.ourfridge.data.UserAndFridgeData
 @Composable
 fun ProfileSideBar(
     viewModel: SideBarViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    screen: String = "",
     drawerState: Boolean,
     onLogout: () -> Unit,
     onSettingChanged: () -> Unit,
     onAccountDelete: () -> Unit,
+    onShowHistory: () -> Unit = {}
 ) {
 
     val interactionSource = MutableInteractionSource()
@@ -130,18 +133,29 @@ fun ProfileSideBar(
 
 
                 else -> {
-                    Text(
-                        text = "Hi ${if (userState.value == null) "" else userState.value?.username}!",
-                        modifier = Modifier.padding(top = 15.dp),
-                        fontSize = 26.sp,
-                        color = MaterialTheme.colors.secondary
-                    )
+                    Column(modifier = Modifier.padding(top = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "OurFridge",
+                            color = MaterialTheme.colors.secondary,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
 
-                    SettingsView(onLeaveFridge = { sidebarViewState.value = "LEAVE" },
+                        Text(
+                            text = "Hi ${if (userState.value == null) "" else userState.value?.username}!",
+                            modifier = Modifier.padding(top = 15.dp),
+                            fontSize = 26.sp,
+                            color = MaterialTheme.colors.secondary
+                        )
+                    }
+
+
+                    SettingsView(screen = screen, onLeaveFridge = { sidebarViewState.value = "LEAVE" },
                         onClearHistory = { sidebarViewState.value = "CLEAR_HISTORY" },
                         onDeleteAllFood = { sidebarViewState.value = "DELETE_FOOD" },
                         onClearShoppingList = { sidebarViewState.value = "CLEAR_SHOPPING" },
-                        onDeleteAccount = { sidebarViewState.value = "DELETE_ACCOUNT" })
+                        onDeleteAccount = { sidebarViewState.value = "DELETE_ACCOUNT" },
+                        onShowHistory = {onShowHistory()})
 
                     Column(
                         modifier = Modifier.clickable(
@@ -201,16 +215,23 @@ fun ConfirmView(text: String, onConfirm: () -> Unit, onDecline: () -> Unit) {
 
 @Composable
 fun SettingsView(
+    screen: String,
     onLeaveFridge: () -> Unit,
     onClearHistory: () -> Unit,
     onDeleteAllFood: () -> Unit,
     onClearShoppingList: () -> Unit,
     onDeleteAccount: () -> Unit,
+    onShowHistory: () -> Unit
 ) {
 
 
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
 
+        if (screen == "home"){
+            SettingsOption(title = "Show fridge history") {
+                onShowHistory()
+            }
+        }
         SettingsOption("Leave fridge") {
             onLeaveFridge()
         }

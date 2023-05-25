@@ -282,9 +282,10 @@ fun ShowHistory(onClose: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth(0.8f)
                 .fillMaxHeight(0.8f),
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Card(modifier = Modifier, shape = RoundedCornerShape(2)) {
+            Card(modifier = Modifier.padding(horizontal = 5.dp), shape = RoundedCornerShape(2)) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -299,7 +300,7 @@ fun ShowHistory(onClose: () -> Unit) {
                     }
                 }
             }
-            Button(modifier = Modifier.fillMaxWidth(), onClick = { onClose() }) {
+            Button(modifier = Modifier.fillMaxWidth(0.6f).padding(top = 5.dp), onClick = { onClose() }) {
                 Text(text = "Close", fontSize = 20.sp, color = MaterialTheme.colors.primaryVariant)
             }
         }
