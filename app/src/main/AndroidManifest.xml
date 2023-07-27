@@ -18,7 +18,9 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.OurFridge">
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.OurFridge"
+            tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

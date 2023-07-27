@@ -62,7 +62,7 @@ fun ShoppingScreen(
 
     Scaffold(scaffoldState = scaffoldState,
         topBar = {
-            OurFridgeAppTopBar(screen = "shopping", onProfileClicked = {
+            OurFridgeAppTopBar(onProfileClicked = {
                 scope.launch { scaffoldState.drawerState.open() }
             })
         },

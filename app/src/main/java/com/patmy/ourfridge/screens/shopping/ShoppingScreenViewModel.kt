@@ -79,7 +79,7 @@ class ShoppingScreenViewModel : ViewModel() {
         val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
         val currentDateTime = LocalDateTime.now().format(formatter)
         var articleListUpdate = articleList.toMutableList()
-        var fridgeAfterAdding = UserAndFridgeData.fridge?.foodInside
+        var fridgeAfterAdding = if (UserAndFridgeData.fridge!!.foodInside[0]?.id == null) emptyList() else UserAndFridgeData.fridge?.foodInside
         var fridgeHistoryUpdate = UserAndFridgeData.fridge?.fridgeHistory
         val articlesAdded = mutableListOf<String>()
 

@@ -1,20 +1,10 @@
 package com.patmy.ourfridge.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 
-private val DarkColorPalette = darkColors(
-    primary = PrimaryDark,
-    primaryVariant = PrimaryVariantDark,
-    secondary = SecondaryDark,
-    onSecondary = TextDark,
-    background = BackgroundDark,
-    error = Error
-)
+
 
 private val LightColorPalette = lightColors(
     primary = PrimaryLight,
@@ -23,24 +13,11 @@ private val LightColorPalette = lightColors(
     onSecondary = TextLight,
     background = BackgroundLight,
     error = Error
-
-    /* Other default colors to override
-    background = Color.White,
-    surface = Color.White,
-    onPrimary = Color.White,
-    onSecondary = Color.Black,
-    onBackground = Color.Black,
-    onSurface = Color.Black,
-    */
 )
 
 @Composable
-fun OurFridgeTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    val colors = if (darkTheme) {
-        DarkColorPalette
-    } else {
-        LightColorPalette
-    }
+fun OurFridgeTheme(content: @Composable () -> Unit) {
+    val colors = LightColorPalette
 
     MaterialTheme(
         colors = colors,

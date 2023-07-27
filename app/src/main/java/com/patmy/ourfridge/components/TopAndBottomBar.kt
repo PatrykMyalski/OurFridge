@@ -2,7 +2,6 @@ package com.patmy.ourfridge.components
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,13 +16,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AdView
 import com.patmy.ourfridge.R
 import com.patmy.ourfridge.data.UserAndFridgeData
 import com.patmy.ourfridge.navigation.OurFridgeScreens
@@ -33,30 +30,7 @@ fun OurFridgeAppTopBar(
     onProfileClicked: () -> Unit = {},
 ) {
     TopAppBar(modifier = Modifier, backgroundColor = MaterialTheme.colors.primary, title = {
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                AndroidView(modifier = Modifier
-                    .width(320.dp)
-                    .height(50.dp), factory = { context ->
-                    AdView(context).apply {
-                        setAdSize(AdSize.BANNER)
-
-                        // TODO before production change this to real ad!
-                        adUnitId = "ca-app-pub-3940256099942544/6300978111"
-                        loadAd(AdRequest.Builder().build())
-                    }
-                })
-            }
-        }
+        Text(text = "OurFridge", color = MaterialTheme.colors.secondary, fontSize = 24.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
     }, navigationIcon = {
         Icon(
             painter = painterResource(id = R.drawable.profile),
@@ -129,7 +103,7 @@ fun BottomAppBarIcon(
 ) {
 
     val backgroundColor = if (highlight) {
-        if (isSystemInDarkTheme()) Color(0x26000000) else Color(0x26FF0000)
+        Color(0x26FF0000)
     } else {
         MaterialTheme.colors.primary
     }
