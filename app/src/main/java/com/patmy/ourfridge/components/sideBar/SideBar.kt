@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -15,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -31,7 +33,7 @@ fun ProfileSideBar(
     onLogout: () -> Unit,
     onSettingChanged: () -> Unit,
     onAccountDelete: () -> Unit,
-    onShowHistory: () -> Unit = {}
+    onShowHistory: () -> Unit = {},
 ) {
 
     val interactionSource = MutableInteractionSource()
@@ -56,7 +58,7 @@ fun ProfileSideBar(
         userState.value = UserAndFridgeData.user
     }
 
-    LaunchedEffect(key1 = drawerState){
+    LaunchedEffect(key1 = drawerState) {
         goBack()
     }
 
@@ -129,11 +131,14 @@ fun ProfileSideBar(
                             toast.show()
                             goBack()
                         })
-                    }, onDecline = {goBack()})
+                    }, onDecline = { goBack() })
 
 
                 else -> {
-                    Column(modifier = Modifier.padding(top = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        modifier = Modifier.padding(top = 10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         Text(
                             text = "OurFridge",
                             color = MaterialTheme.colors.secondary,
@@ -150,12 +155,13 @@ fun ProfileSideBar(
                     }
 
 
-                    SettingsView(screen = screen, onLeaveFridge = { sidebarViewState.value = "LEAVE" },
+                    SettingsView(screen = screen,
+                        onLeaveFridge = { sidebarViewState.value = "LEAVE" },
                         onClearHistory = { sidebarViewState.value = "CLEAR_HISTORY" },
                         onDeleteAllFood = { sidebarViewState.value = "DELETE_FOOD" },
                         onClearShoppingList = { sidebarViewState.value = "CLEAR_SHOPPING" },
                         onDeleteAccount = { sidebarViewState.value = "DELETE_ACCOUNT" },
-                        onShowHistory = {onShowHistory()})
+                        onShowHistory = { onShowHistory() })
 
                     Column(
                         modifier = Modifier.clickable(
@@ -221,13 +227,13 @@ fun SettingsView(
     onDeleteAllFood: () -> Unit,
     onClearShoppingList: () -> Unit,
     onDeleteAccount: () -> Unit,
-    onShowHistory: () -> Unit
+    onShowHistory: () -> Unit,
 ) {
 
 
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
 
-        if (screen == "home"){
+        if (screen == "home") {
             SettingsOption(title = "Show fridge history") {
                 onShowHistory()
             }
@@ -254,22 +260,32 @@ fun SettingsView(
 fun SettingsOption(title: String, onClick: () -> Unit) {
 
     val color = MaterialTheme.colors.primaryVariant
+    val canDo = if (UserAndFridgeData.user!!.role == "child"){
+        title == "Delete account"
+    } else true
 
+    val context = LocalContext.current
+    val toastDuration = Toast.LENGTH_SHORT
+    val toast =
+        Toast.makeText(context, "As children you are not able to do that!", toastDuration)
 
-    Column(
+    Card(
         modifier = Modifier
             .fillMaxWidth(0.8f)
-            .padding(vertical = 5.dp)
-            .clickable { onClick() },
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(vertical = 5.dp),
+        shape = RoundedCornerShape(5.dp),
+        backgroundColor = MaterialTheme.colors.background,
+        elevation = 0.dp
     ) {
-        Text(
-            text = title,
-            modifier = Modifier.padding(vertical = 5.dp),
-            fontSize = 20.sp,
-            color = color
-        )
-        Divider(modifier = Modifier.fillMaxWidth(), thickness = 1.dp, color = color)
+        Column(modifier = Modifier.clickable { if (canDo) onClick() else toast.show() }, horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = title,
+                modifier = Modifier.padding(vertical = 5.dp),
+                fontSize = 20.sp,
+                color = if (canDo) color else Color(0, 0, 0, 51)
+            )
+            Divider(modifier = Modifier.fillMaxWidth(), thickness = 1.dp, color = color)
+        }
     }
 
 }

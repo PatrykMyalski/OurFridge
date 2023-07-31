@@ -76,33 +76,32 @@ fun FridgeHomeScreen(
     }
 
 
-    Scaffold(scaffoldState = scaffoldState, topBar = {
-        OurFridgeAppTopBar(onProfileClicked = {
-            scope.launch { scaffoldState.drawerState.open() }
-        })
-    }, drawerGesturesEnabled = scaffoldState.drawerState.isOpen, drawerContent = {
-        ProfileSideBar(screen = "home",
-            drawerState = scaffoldState.drawerState.isOpen,
-            onLogout = {
-                loggingOut.value = true
-                Firebase.auth.signOut()
-                navController.navigate(OurFridgeScreens.LoginScreen.name)
-            },
-            onSettingChanged = { scope.launch { scaffoldState.drawerState.close() } },
-            onAccountDelete = { navController.navigate(OurFridgeScreens.LoginScreen.name) },
-            onShowHistory = {
-                scope.launch { scaffoldState.drawerState.close() }
-                showHistory.value = true
+    if (loadingData.value) {
+        LoadingCircleCenter()
+    } else {
+        Scaffold(scaffoldState = scaffoldState, topBar = {
+            OurFridgeAppTopBar(onProfileClicked = {
+                scope.launch { scaffoldState.drawerState.open() }
             })
+        }, drawerGesturesEnabled = scaffoldState.drawerState.isOpen, drawerContent = {
+            ProfileSideBar(screen = "home",
+                drawerState = scaffoldState.drawerState.isOpen,
+                onLogout = {
+                    loggingOut.value = true
+                    Firebase.auth.signOut()
+                    navController.navigate(OurFridgeScreens.LoginScreen.name)
+                },
+                onSettingChanged = { scope.launch { scaffoldState.drawerState.close() } },
+                onAccountDelete = { navController.navigate(OurFridgeScreens.LoginScreen.name) },
+                onShowHistory = {
+                    scope.launch { scaffoldState.drawerState.close() }
+                    showHistory.value = true
+                })
 
-    }, backgroundColor = MaterialTheme.colors.background, bottomBar = {
-        OurFridgeAppBottomBar(navController, currentScreen = "home")
-    }) {
-        Box(modifier = Modifier.padding(it)) {
-            if (loadingData.value) {
-                LoadingCircleCenter()
-
-            } else {
+        }, backgroundColor = MaterialTheme.colors.background, bottomBar = {
+            OurFridgeAppBottomBar(navController, currentScreen = "home")
+        }) {
+            Box(modifier = Modifier.padding(it)) {
                 HomeScreenView(showHistory = showHistory.value && scaffoldState.drawerState.isClosed,
                     loadingFridge = loadingFridge.value,
                     loadingInAddFoodForm = loadingInAddFoodForm.value,
@@ -127,9 +126,12 @@ fun FridgeHomeScreen(
                     onCloseHistory = {
                         showHistory.value = false
                     })
+
             }
         }
     }
+
+
 }
 
 @Composable
